@@ -51,10 +51,10 @@ We even have a [Cytoscape plug-in][7].
 With the plug-in you are able to load networks into Cytoscape and access
 certain (not all) annotations of the proteins.
 
-[1] https://omnipathdb.org/
-[2] https://www.biorxiv.org/content/10.1101/2020.08.03.221242v2
-[3] https://rdcu.be/m53B
-[4] https://static-content.springer.com/esm/art%3A10.1038%2Fnmeth.4077/MediaObjects/41592_2016_BFnmeth4077_MOESM495_ESM.pdf
-[5] https://github.com/saezlab/OmnipathR
-[6] http://bioconductor.org/packages/3.12/bioc/html/OmnipathR.html
-[7] https://apps.cytoscape.org/apps/omnipath
+[1]: https://omnipathdb.org/
+[2]: https://www.biorxiv.org/content/10.1101/2020.08.03.221242v2
+[3]: https://rdcu.be/m53B
+[4]: https://static-content.springer.com/esm/art%3A10.1038%2Fnmeth.4077/MediaObjects/41592_2016_BFnmeth4077_MOESM495_ESM.pdf
+[5]: https://github.com/saezlab/OmnipathR
+[6]: http://bioconductor.org/packages/3.12/bioc/html/OmnipathR.html
+[7]: https://apps.cytoscape.org/apps/omnipath
