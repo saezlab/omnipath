@@ -1,4 +1,4 @@
 --index-url https://pypi.python.org/simple/
-
-pandas
 -e .
+
+pandas>=1.1.4
