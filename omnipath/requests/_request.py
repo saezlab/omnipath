@@ -59,7 +59,6 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         )
 
         url = _format_url(options.url, self._query_type)
-        print(url)
 
         return self._post_process(
             self._downloader.maybe_download(url, params=params, callback=callback),
