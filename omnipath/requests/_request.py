@@ -11,12 +11,14 @@ from omnipath.constants import Organism, QueryType, QueryParams, InteractionData
 from omnipath.constants._pkg_constants import _Format, _DefaultField
 
 
-class OmnipathRequestMeta(ABCMeta):
+class OmnipathRequestMeta(ABCMeta):  # noqa: D101
+    # TODO: make sure no intersection in __string__, etc.
     pass
 
 
 class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
-    # TODO: make sure no intersection (use the metaclass)
+    """Base class for all :mod:`omnipath` requests."""
+
     __string__ = frozenset({"uniprot", "genesymbol"})
     __logical__ = frozenset()
     __categorical__ = frozenset()
@@ -36,6 +38,30 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         genesymbols: bool = True,
         **kwargs,
     ) -> pd.DataFrame:
+        """
+        Perform a request.
+
+        Parameters
+        ----------
+        organism
+            Organism for which to make the request. Can be one of the following:
+
+                - omnipath.constants.Organism.HUMAN
+                - omnipath.constants.Organism.MOUSE
+                - omnipath.constants.Organism.RAT
+        resources
+            Return only results which are contained in any of these databases.
+        genesymbols
+            Whether to also retrieve the gene symbols.
+        **kwargs
+            Keyword arguments for the query.
+
+        Returns
+        -------
+        :class:`pandas.DataFrame`
+            The requested data.
+        """
+        # TODO: improve docs, expose parameters, docrep/inject docs
         organism = Organism(organism)
 
         if resources is None:
@@ -90,6 +116,8 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
             cols = list(frozenset(df.columns) & columns)
             df[cols] = df[cols].astype("string")
 
+        # TODO: extract the above functions from this scope?
+
         if not isinstance(res, pd.DataFrame):
             raise TypeError(type(res))
 
@@ -100,6 +128,19 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         return res
 
     def resources(self, **kwargs) -> Tuple[str]:
+        """
+        Return available resources for this type of query.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments used for filtering unwanted resources.
+
+        Returns
+        -------
+        tuple
+            Sequence of sorted resources.
+        """
         return tuple(
             sorted(
                 res
@@ -118,6 +159,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
     def _validate_params(
         self, params: Optional[Dict[str, Any]], add_defaults: bool = True
     ) -> Dict[str, Any]:
+        # TODO: refactor this function
         for name, value in params.items():
             _ = QueryParams(name)
             if isinstance(value, (tuple, list)):
@@ -135,6 +177,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
             unknown_resources = requested_resources - set(self.resources())
 
             if unknown_resources:
+                # TODO: logging
                 print("TODO UNK resources:", unknown_resources)
 
         for opt, val in zip(
@@ -153,6 +196,16 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
 
 
 class CommonPostProcessor(OmnipathRequestABC, ABC):
+    """
+    Class that implements common post-processing steps for :class:`omnipath.requests.Enzsub`, \
+    :class:`omnipath.requests.Intercell`, :class:`omnipath.requests.Complexes` and \
+    :class`omnipath.interactions.InteractionRequest`.
+
+    This class remove `'genesymbols'` and `'organisms'` from the query parameters, as well as optionally adds
+    number of resources and references to the result or removes the resource labels from references (PubMed IDs)
+    :class:`omnipath.interactions.InteractionRequest` and :class:`omnipath.requests.Enzsub`.
+    """
+
     def _post_process(
         self,
         res: pd.DataFrame,
@@ -162,7 +215,7 @@ class CommonPostProcessor(OmnipathRequestABC, ABC):
     ) -> pd.DataFrame:
         res = super()._post_process(res)
 
-        # TODO
+        # TODO: finish this
         if strip_reference_from_resource and "references" in res:
             res["references"] = 0
         if add_counts:
@@ -175,7 +228,8 @@ class CommonPostProcessor(OmnipathRequestABC, ABC):
         self,
         resources: Optional[Sequence[str]] = None,
         **kwargs,
-    ) -> pd.DataFrame:
+    ) -> pd.DataFrame:  # noqa: D102
+        # TODO: docrep
         return super().get(
             Organism.HUMAN, resources=resources, genesymbols=False, **kwargs
         )
@@ -192,6 +246,12 @@ class CommonPostProcessor(OmnipathRequestABC, ABC):
 
 
 class Enzsub(CommonPostProcessor):
+    """
+    Class capable of requesting enzyme-substrate relationships from [OmniPath]_.
+
+    Imports the enzyme-substrate (more exactly, enzyme-PTM) relationship `database <https://omnipathdb.org/enzsub>`__.
+    """
+
     def __init__(self):
         super().__init__(QueryType.ENZSUB)
 

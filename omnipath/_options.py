@@ -1,5 +1,5 @@
 import configparser
-from typing import Union, ClassVar, Optional
+from typing import Union, ClassVar, NoReturn, Optional
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -9,14 +9,16 @@ from omnipath._cache import Cache, FileCache, MemoryCache
 from omnipath.constants import License
 
 
-def _is_positive(_instance, attribute: attr.Attribute, value: int) -> None:
+def _is_positive(_instance, attribute: attr.Attribute, value: int) -> NoReturn:
+    """Check whether the ``value`` is positive."""
     if value <= 0:
         raise ValueError(
             f"Expected `{attribute.name}` to be positive, found `{value}`."
         )
 
 
-def _is_valid_url(_instance, _attribute: attr.Attribute, value: str) -> None:
+def _is_valid_url(_instance, _attribute: attr.Attribute, value: str) -> NoReturn:
+    """Check whether the ``value`` forms a valid URL."""
     pr = urlparse(value)
 
     if not pr.scheme or not pr.netloc:
@@ -24,13 +26,14 @@ def _is_valid_url(_instance, _attribute: attr.Attribute, value: str) -> None:
 
 
 def _cache_converter(value: Optional[Union[str, Path]]) -> Cache:
+    """Convert ``value`` to :class:`omnipath._cache.Cache`."""
     if value is None:
         return DefaultOptions.MEM_CACHE
 
     return FileCache(value)
 
 
-class DefaultOptions:
+class DefaultOptions:  #: noqa: D101
     URL: str = "https://omnipathdb.org"
     LICENSE: License = License.ACADEMIC
     NUM_RETRIES: int = 3
@@ -42,6 +45,8 @@ class DefaultOptions:
 
 @attr.s
 class Options:
+    """:mod:`omnipath` options."""
+
     config_path: ClassVar[Path] = Path.home() / ".config" / "omnipathdb.ini"
 
     url: str = attr.ib(
@@ -90,7 +95,8 @@ class Options:
         return config
 
     @classmethod
-    def from_config(cls):
+    def from_config(cls) -> "Options":
+        """Return the options from a configuration file."""
         if not cls.config_path.is_file():
             return cls().write()
 
@@ -118,7 +124,8 @@ class Options:
             cache=cache,
         )
 
-    def write(self):
+    def write(self) -> NoReturn:
+        """Write the current options to a configuration file."""
         self.config_path.parent.mkdir(exist_ok=True)
 
         config = self._create_config()

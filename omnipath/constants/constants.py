@@ -57,7 +57,7 @@ class QueryParams(Enum):  # noqa: D101
 
 
 @unique
-class InteractionDataset(Enum):
+class InteractionDataset(Enum):  # noqa: D101
     OMNIPATH = "omnipath"
     PATHWAY_EXTRA = "pathwayextra"
     KINASE_EXTRA = "kinaseextra"
@@ -71,16 +71,19 @@ class InteractionDataset(Enum):
 
 
 @unique
-class DorotheaLevels(Enum):
+class DorotheaLevels(Enum):  # noqa: D101
     A = "A"
     B = "B"
     C = "C"
     D = "D"
 
 
-# TODO: not used
+# TODO: what about E
+
+
+# TODO: is this needed?
 @unique
-class TfTargetLevels(Enum):
+class TFtargetLevels(Enum):  # noqa: D101
     A = "A"
     B = "B"
     C = "C"
@@ -97,10 +100,10 @@ class Organism(Enum):  # noqa: D101
 
 __all__ = [
     License,
+    Organism,
     QueryType,
     QueryParams,
-    InteractionDataset,
     DorotheaLevels,
-    TfTargetLevels,
-    Organism,
+    TFtargetLevels,
+    InteractionDataset,
 ]

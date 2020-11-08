@@ -12,6 +12,15 @@ from omnipath.constants._pkg_constants import _Format, _QueryTypeSummary
 
 
 class Intercell(CommonPostProcessor):
+    """
+    Class capable of requesting `intercell` annotations from [OmniPath]_.
+
+    Imports the [OmniPath]_ inter-cellular communication role annotation `database <https://omnipathdb.org/intercell>`.
+
+    It provides information on the roles in inter-cellular signaling, e.g. if a protein is a ligand, a receptor,
+    an extracellular matrix (ECM) component, etc.
+    """
+
     __categorical__ = frozenset(
         {"category", "parent", "database", "scope", "aspect", "source", "entity_type"}
     )
@@ -31,13 +40,15 @@ class Intercell(CommonPostProcessor):
 
     @cached_property
     def _summary(self) -> pd.DataFrame:
+        """Retrieve `intercell` summary data."""
         return self._downloader.maybe_download(
             _format_url(options.url, _QueryTypeSummary.INTERCELL),
             params={QueryParams.FORMAT.value: _Format.JSON.value},
-            callback=self._tsv_reader,
+            callback=self._json_reader,
         )
 
     def _get_metadata(self, col: str) -> Tuple[str]:
+        """Return unique summary data from column ``col``."""
         res = self._summary
 
         if col not in res.columns:
@@ -47,11 +58,13 @@ class Intercell(CommonPostProcessor):
 
     @cached_property
     def categories(self) -> Tuple[str]:
+        """Return categories from the `intercell` database of [OmniPath]_."""
         return self._get_metadata("category")
 
     @cached_property
     def generic_categories(self):
+        """Return generic categories from the `intercell` database of [OmniPath]_."""
         return self._get_metadata("parent")
 
-    def filter(self) -> pd.DataFrame:
+    def filter(self) -> pd.DataFrame:  # noqa: D102
         raise NotImplementedError()

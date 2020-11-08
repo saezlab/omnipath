@@ -4,6 +4,6 @@ from omnipath.constants.constants import (
     QueryType,
     QueryParams,
     DorotheaLevels,
-    TfTargetLevels,
+    TFtargetLevels,
     InteractionDataset,
 )

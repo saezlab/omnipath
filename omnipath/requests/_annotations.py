@@ -7,6 +7,8 @@ from omnipath.requests._request import OmnipathRequestABC
 
 
 class Annotations(OmnipathRequestABC):
+    """Class capable of requesting annotations from [OmniPath]_."""
+
     def __init__(self):
         super().__init__(QueryType.ANNOTATIONS)
 
@@ -17,6 +19,42 @@ class Annotations(OmnipathRequestABC):
         genesymbols: bool = True,
         **kwargs,
     ) -> pd.DataFrame:
+        """
+        Import annotations from [OmniPath]_.
+
+        Retrieves protein annotations about function, localization, expression, structure and other properties of
+        proteins from `OmniPath <https://omnipathdb.org/annotations>`__.
+
+        Parameters
+        ----------
+        proteins
+            Genes or proteins for which annotations will be retrieved (UniProt IDs, HGNC Gene Symbols or miRBase IDs).
+
+            It is also possible to download annotations for protein complexes. To do so, write **'COMPLEX:'**
+            before the gene symbols of the genes integrating the complex.
+
+            Maximum number of proteins for `1` request is `600`.
+        resources
+            # TODO docrep
+            To get available resources, see :meth:`resources`.
+        **kwargs
+            # TODO docrep
+
+        Returns
+        -------
+        :class:`pandas.DataFrame`
+            A dataframe containing different gene/complex annotations.
+
+        Notes
+        -----
+        There might be also a few miRNAs annotated. A vast majority of protein complex annotations are inferred
+        from the annotations of the members: if all members carry the same annotation the complex inherits.
+        """
+        # TODO: docrep
+        # TODO: force_full_download?
+        # TODO: wide?
+        # TODO: more than 600 proteins?
+
         if len(proteins) > 600:
             raise ValueError("Please request at most `600` proteins.")
 

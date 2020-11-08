@@ -5,6 +5,8 @@ from omnipath.requests._request import CommonPostProcessor
 
 
 class Complexes(CommonPostProcessor):
+    """Class capable of requesting information about protein complexes from [OmniPath]_."""
+
     __string__ = frozenset(
         {
             "name",

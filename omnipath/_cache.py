@@ -6,6 +6,8 @@ from pathlib import Path
 
 
 class Cache(ABC):
+    """Abstract class which defines the caching interface."""
+
     @abstractmethod
     def __getitem__(self, key: str) -> Optional[Any]:
         pass
@@ -15,12 +17,12 @@ class Cache(ABC):
         pass
 
     @abstractmethod
-    def clear(self):
+    def clear(self):  # noqa: D102
         pass
 
     @property
     @abstractmethod
-    def path(self) -> Optional[Union[str, Path]]:
+    def path(self) -> Optional[Union[str, Path]]:  # noqa: D102
         pass
 
     @abstractmethod
@@ -32,6 +34,15 @@ class Cache(ABC):
 
 
 class FileCache(Cache):
+    """
+    Cache which persists the data into :mod:`pickle` files.
+
+    Parameters
+    ----------
+    path
+        Path to a directory where the files will be stored.
+    """
+
     _suffix = ".pickle"
 
     def __init__(self, path: Union[str, Path]):
@@ -73,9 +84,11 @@ class FileCache(Cache):
 
     @property
     def path(self) -> Path:
+        """Return the directory where the cache files are stored."""
         return self._cache_dir
 
     def clear(self) -> NoReturn:
+        """Remove all files and the directory under :paramref:`path`."""
         if self._cache_dir.is_dir():
             rmtree(self._cache_dir)
 
@@ -84,8 +97,11 @@ class FileCache(Cache):
 
 
 class MemoryCache(dict, Cache):
+    """Cache which persists the data into the memory."""
+
     @property
-    def path(self) -> Optional[Union[str, Path]]:
+    def path(self) -> None:
+        """Return nothing."""
         return None
 
     def __str__(self) -> str:
@@ -96,6 +112,7 @@ class MemoryCache(dict, Cache):
 
 
 def clear_cache() -> NoReturn:
+    """Remove all files from the cache :attr:`omnipath.options.cache`."""
     from omnipath import options
 
     options.cache.clear()
