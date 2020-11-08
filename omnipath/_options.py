@@ -1,0 +1,134 @@
+import configparser
+from typing import Union, ClassVar, Optional
+from pathlib import Path
+from urllib.parse import urlparse
+
+import attr
+
+from omnipath._cache import Cache, FileCache, MemoryCache
+from omnipath.constants import License
+
+
+def _is_positive(_instance, attribute: attr.Attribute, value: int) -> None:
+    if value <= 0:
+        raise ValueError(
+            f"Expected `{attribute.name}` to be positive, found `{value}`."
+        )
+
+
+def _is_valid_url(_instance, _attribute: attr.Attribute, value: str) -> None:
+    pr = urlparse(value)
+
+    if not pr.scheme or not pr.netloc:
+        raise ValueError(f"Invalid URL `{value}`.")
+
+
+def _cache_converter(value: Optional[Union[str, Path]]) -> Cache:
+    if value is None:
+        return DefaultOptions.MEM_CACHE
+
+    return FileCache(value)
+
+
+class DefaultOptions:
+    URL: str = "https://omnipathdb.org"
+    LICENSE: License = License.ACADEMIC
+    NUM_RETRIES: int = 3
+    TIMEOUT: int = 5
+    CHUNK_SIZE: int = 8196
+    CACHE_DIR: Path = Path.home() / ".cache" / "omnipathdb"
+    MEM_CACHE = MemoryCache()
+
+
+@attr.s
+class Options:
+    config_path: ClassVar[Path] = Path.home() / ".config" / "omnipathdb.ini"
+
+    url: str = attr.ib(
+        default=DefaultOptions.URL,
+        validator=[attr.validators.instance_of(str), _is_valid_url],
+        on_setattr=attr.setters.validate,
+    )
+    license: License = attr.ib(
+        default=License.ACADEMIC, converter=License, on_setattr=attr.setters.convert
+    )
+    password: Optional[str] = attr.ib(default=None, repr=False)
+
+    cache: Cache = attr.ib(
+        default=DefaultOptions.CACHE_DIR,
+        converter=_cache_converter,
+        kw_only=True,
+        on_setattr=attr.setters.convert,
+    )
+
+    num_retries: int = attr.ib(
+        default=DefaultOptions.NUM_RETRIES,
+        validator=[attr.validators.instance_of(int), _is_positive],
+        on_setattr=attr.setters.validate,
+    )
+    timeout: int = attr.ib(
+        default=DefaultOptions.TIMEOUT,
+        validator=[attr.validators.instance_of(int), _is_positive],
+        on_setattr=attr.setters.validate,
+    )
+    chunk_size: int = attr.ib(
+        default=DefaultOptions.CHUNK_SIZE,
+        validator=[attr.validators.instance_of(int), _is_positive],
+        on_setattr=attr.setters.validate,
+    )
+
+    def _create_config(self):
+        config = configparser.ConfigParser()
+        config[self.url] = {
+            "license": self.license.value,
+            "cache_dir": str(self.cache.path),
+            "num_retries": self.num_retries,
+            "timeout": self.timeout,
+            "chunk_size": self.chunk_size,
+        }
+
+        return config
+
+    @classmethod
+    def from_config(cls):
+        if not cls.config_path.is_file():
+            return cls().write()
+
+        section = DefaultOptions.URL
+
+        config = configparser.ConfigParser()
+        config.read(cls.config_path)
+
+        cache = config.get(section, "cache_dir", fallback=DefaultOptions.CACHE_DIR)
+        if cache == "None":
+            cache = None
+
+        return cls(
+            url=section,
+            license=License(
+                config.get(section, "license", fallback=DefaultOptions.LICENSE)
+            ),
+            num_retries=config.getint(
+                section, "num_retries", fallback=DefaultOptions.NUM_RETRIES
+            ),
+            timeout=config.getint(section, "timeout", fallback=DefaultOptions.TIMEOUT),
+            chunk_size=config.getint(
+                section, "chunk_size", fallback=DefaultOptions.CHUNK_SIZE
+            ),
+            cache=cache,
+        )
+
+    def write(self):
+        self.config_path.parent.mkdir(exist_ok=True)
+
+        config = self._create_config()
+        with open(self.config_path, "w") as fout:
+            config.write(fout)
+
+        return self
+
+
+options = Options.from_config()
+
+
+__all__ = [options]

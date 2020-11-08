@@ -1,30 +1,24 @@
-from enum import Enum
+from enum import Enum, unique
 
 
+@unique
 class License(Enum):  # noqa: D101
     COMMERCIAL = "commercial"
     ACADEMIC = "academic"
 
 
-class Synonym(Enum):  # noqa: D101
-    PTMS = "enzsub"
-    ENZSUB = PTMS
-    COMPLEX = "complexes"
-
-
-class PrettyMessage(Enum):  # noqa: D101
-    ENZSUB = "enzyme-substrate relationships"
+@unique
+class QueryType(Enum):  # noqa: D101
+    ENZSUB = "enz_sub"
     INTERACTIONS = "interactions"
-    COMPLEXES = "protein complexes"
-    ANNOTATIONS = "annotation records"
-    INTERCELL = "intercellular communication role records"
+    COMPLEXES = "complexes"
+    ANNOTATIONS = "annotations"
+    INTERCELL = "intercell"
+    QUERIES = "queries"
+    # INFO = "info"
 
 
-class DefaultField(Enum):  # noqa: D101
-    ENZSUB = ("sources", "references", "curation_effort")
-    INTERACTIONS = ENZSUB
-
-
+@unique
 class QueryParams(Enum):  # noqa: D101
     GENESYMBOLS = "genesymbols"
     RESOURCES = "resources"
@@ -62,19 +56,51 @@ class QueryParams(Enum):  # noqa: D101
     PASSWORD = "password"
 
 
-class QuerySynonym(Enum):  # noqa: D101
-    ORGANISM = QueryParams.ORGANISMS
-    RESOURCE = QueryParams.RESOURCES
-    DATABASE = RESOURCE
-    DATABASES = RESOURCE
-    DOROTHEA_LEVEL = QueryParams.DOROTHEA_LEVELS
-    TFREGULONS_LEVELS = DOROTHEA_LEVEL
-    TFREGULONS_LEVEL = DOROTHEA_LEVEL
-    GENESYMBOL = QueryParams.GENESYMBOLS
-    FIELD = QueryParams.FIELDS
-    DATASET = QueryParams.DATASETS
-    # DIRECTED = QueryParams.DIRECTED
-    ENTITY_TYPE = QueryParams.ENTITY_TYPES
+@unique
+class InteractionDataset(Enum):
+    OMNIPATH = "omnipath"
+    PATHWAY_EXTRA = "pathwayextra"
+    KINASE_EXTRA = "kinaseextra"
+    LIGREC_EXTRA = "ligrecextra"
+    DOROTHEA = "dorothea"
+    TF_TARGET = "tf_target"
+    TF_MIRNA = "tf_mirna"  # ?
+    TF_REGULONS = "tfregulons"
+    MIRNA_TARGET = "mirnatarget"
+    LNCRNA_MRNA = "lncrna_mrna"
 
 
-__all__ = [License, Synonym, PrettyMessage, DefaultField, QueryParams, QuerySynonym]
+@unique
+class DorotheaLevels(Enum):
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+
+
+# TODO: not used
+@unique
+class TfTargetLevels(Enum):
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    E = "E"
+
+
+@unique
+class Organism(Enum):  # noqa: D101
+    HUMAN = 9606
+    RAT = 10116
+    MOUSE = 10090
+
+
+__all__ = [
+    License,
+    QueryType,
+    QueryParams,
+    InteractionDataset,
+    DorotheaLevels,
+    TfTargetLevels,
+    Organism,
+]

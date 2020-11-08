@@ -1,5 +1,7 @@
---index-url https://pypi.python.org/simple/
--e .
-dataclass_property>=1.1.0
-
+attrs>=20.2.0
+cached_property>=1.5.2
+future_fstrings>=1.2.0
 pandas>=1.1.4
+requests>=2.24.0
+tqdm>=4.51.0
+urllib3>=1.25.11
