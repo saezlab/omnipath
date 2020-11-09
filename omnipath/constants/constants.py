@@ -18,6 +18,7 @@ class QueryType(Enum):  # noqa: D101
     # INFO = "info"
 
 
+# TODO: make this query specific (e.g. https://omnipathdb.org/queries/interactions)
 @unique
 class QueryParams(Enum):  # noqa: D101
     GENESYMBOLS = "genesymbols"
@@ -54,6 +55,7 @@ class QueryParams(Enum):  # noqa: D101
     CAUSALITY = "causality"
     LICENSE = "license"
     PASSWORD = "password"
+    TYPES = "types"
 
 
 @unique

@@ -143,6 +143,18 @@ class Dorothea(InteractionRequest):
     (TF)-target interactions from `DoRothEA <https://github.com/saezlab/DoRothEA>`__.
     """
 
+    __string__ = frozenset({"source", "target", "dip_url"})
+    __logical__ = frozenset(
+        {
+            "is_directed",
+            "is_stimulation",
+            "is_inhibition",
+            "consensus_direction",
+            "consensus_stimulation",
+            "consensus_inhibition",
+        }
+    )
+
     def __init__(self):
         super().__init__(InteractionDataset.DOROTHEA)
 
@@ -151,8 +163,9 @@ class Dorothea(InteractionRequest):
     ) -> Mapping[str, Any]:
         params = super()._validate_params(params, add_defaults=add_defaults)
 
-        if QueryParams.DOROTHEA_LEVELS.value in params:
-            requested_levels = set(params[QueryParams.DOROTHEA_LEVELS.value])
+        dkey = QueryParams.DOROTHEA_LEVELS.value
+        if params.get(dkey, None) is not None:
+            requested_levels = set(params[dkey].split(","))
             unexpected_levels = requested_levels - {
                 level.value for level in DorotheaLevels
             }
