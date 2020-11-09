@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 
 import pandas as pd
 
-from omnipath._options import options
+import omnipath as op
 from omnipath.constants import (
     QueryType,
     QueryParams,
@@ -55,7 +55,7 @@ class InteractionRequest(CommonPostProcessor, ABC):
                 exclude = set()
 
             url = urljoin(
-                urljoin(options.url, QueryType.QUERIES.value) + "/",
+                urljoin(op.options.url, QueryType.QUERIES.value) + "/",
                 self._query_type.value,
             )
             params = {QueryParams.FORMAT.value: _Format.JSON.value}
@@ -78,10 +78,7 @@ class InteractionRequest(CommonPostProcessor, ABC):
 
         self._datasets = set(datasets)
 
-    # TODO: abstract away to all Q types
-    # TODO: pass **kwargs?
-    # TODO: make cached_property? (also in parent)
-    def resources(self) -> Tuple[str]:
+    def resources(self, **_) -> Tuple[str]:
         """Return resources for this type of query."""
         return super().resources(datasets=self._datasets)
 
@@ -157,7 +154,7 @@ class Dorothea(InteractionRequest):
         if QueryParams.DOROTHEA_LEVELS.value in params:
             requested_levels = set(params[QueryParams.DOROTHEA_LEVELS.value])
             unexpected_levels = requested_levels - {
-                level.values for level in DorotheaLevels
+                level.value for level in DorotheaLevels
             }
 
             # TODO: logging

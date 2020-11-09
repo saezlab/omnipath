@@ -1,3 +1,4 @@
+import os
 import pickle
 from abc import ABC, abstractmethod
 from shutil import rmtree
@@ -17,7 +18,11 @@ class Cache(ABC):
         pass
 
     @abstractmethod
-    def clear(self):  # noqa: D102
+    def __len__(self) -> int:
+        pass
+
+    @abstractmethod
+    def clear(self) -> NoReturn:  # noqa: D102
         pass
 
     @property
@@ -82,6 +87,13 @@ class FileCache(Cache):
         with open(self._cache_dir / key, "rb") as fin:
             return pickle.load(fin)
 
+    def __len__(self) -> int:
+        return (
+            len([f for f in os.listdir(self.path) if str(f).endswith(self._suffix)])
+            if self.path.is_dir()
+            else 0
+        )
+
     @property
     def path(self) -> Path:
         """Return the directory where the cache files are stored."""
@@ -93,7 +105,7 @@ class FileCache(Cache):
             rmtree(self._cache_dir)
 
     def __str__(self) -> str:
-        return f"<{self.__class__.__name__}[path={str(self.path)!r}]>"
+        return f"<{self.__class__.__name__}[size={len(self)}, path={str(self.path)!r}]>"
 
 
 class MemoryCache(dict, Cache):

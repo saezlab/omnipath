@@ -1,4 +1,5 @@
 import configparser
+from copy import copy
 from typing import Union, ClassVar, NoReturn, Optional
 from pathlib import Path
 from urllib.parse import urlparse
@@ -14,6 +15,14 @@ def _is_positive(_instance, attribute: attr.Attribute, value: int) -> NoReturn:
     if value <= 0:
         raise ValueError(
             f"Expected `{attribute.name}` to be positive, found `{value}`."
+        )
+
+
+def _is_non_negative(_instance, attribute: attr.Attribute, value: int) -> NoReturn:
+    """Check whether the ``value`` is positive."""
+    if value < 0:
+        raise ValueError(
+            f"Expected `{attribute.name}` to be non-negative, found `{value}`."
         )
 
 
@@ -41,6 +50,7 @@ class DefaultOptions:  #: noqa: D101
     CHUNK_SIZE: int = 8196
     CACHE_DIR: Path = Path.home() / ".cache" / "omnipathdb"
     MEM_CACHE = MemoryCache()
+    PROGRESS_BAR: bool = True
 
 
 @attr.s
@@ -57,7 +67,12 @@ class Options:
     license: License = attr.ib(
         default=License.ACADEMIC, converter=License, on_setattr=attr.setters.convert
     )
-    password: Optional[str] = attr.ib(default=None, repr=False)
+    password: Optional[str] = attr.ib(
+        default=None,
+        repr=False,
+        validator=attr.validators.optional(attr.validators.instance_of(str)),
+        on_setattr=attr.setters.validate,
+    )
 
     cache: Cache = attr.ib(
         default=DefaultOptions.CACHE_DIR,
@@ -68,12 +83,12 @@ class Options:
 
     num_retries: int = attr.ib(
         default=DefaultOptions.NUM_RETRIES,
-        validator=[attr.validators.instance_of(int), _is_positive],
+        validator=[attr.validators.instance_of(int), _is_non_negative],
         on_setattr=attr.setters.validate,
     )
-    timeout: int = attr.ib(
+    timeout: Union[int, float] = attr.ib(
         default=DefaultOptions.TIMEOUT,
-        validator=[attr.validators.instance_of(int), _is_positive],
+        validator=[attr.validators.instance_of((int, float)), _is_positive],
         on_setattr=attr.setters.validate,
     )
     chunk_size: int = attr.ib(
@@ -82,14 +97,23 @@ class Options:
         on_setattr=attr.setters.validate,
     )
 
+    progress_bar: bool = attr.ib(
+        default=True,
+        repr=False,
+        validator=attr.validators.instance_of(bool),
+        on_setattr=attr.setters.validate,
+    )
+
     def _create_config(self):
         config = configparser.ConfigParser()
+        # do not save the password
         config[self.url] = {
             "license": self.license.value,
             "cache_dir": str(self.cache.path),
             "num_retries": self.num_retries,
             "timeout": self.timeout,
             "chunk_size": self.chunk_size,
+            "progress_bar": self.progress_bar,
         }
 
         return config
@@ -121,6 +145,9 @@ class Options:
             chunk_size=config.getint(
                 section, "chunk_size", fallback=DefaultOptions.CHUNK_SIZE
             ),
+            progress_bar=config.getint(
+                section, "progress_bar", fallback=DefaultOptions.PROGRESS_BAR
+            ),
             cache=cache,
         )
 
@@ -134,8 +161,18 @@ class Options:
 
         return self
 
+    def __enter__(self):
+        import omnipath as op
 
-options = Options.from_config()
+        self._previous_options = copy(op.options)
+        op.options = self
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        import omnipath as op
+
+        op.options = self._previous_options
 
 
-__all__ = [options]
+__all__ = [Options]

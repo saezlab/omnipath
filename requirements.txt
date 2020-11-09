@@ -1,5 +1,4 @@
 attrs>=20.2.0
-cached_property>=1.5.2
 future_fstrings>=1.2.0
 pandas>=1.1.4
 requests>=2.24.0

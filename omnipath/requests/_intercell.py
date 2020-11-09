@@ -1,11 +1,9 @@
-from typing import Any, Tuple, Mapping, Optional, Sequence
-
-from cached_property import cached_property
+from typing import Any, Tuple, Union, Mapping, Optional, Sequence
 
 import pandas as pd
 
+import omnipath as op
 from omnipath._utils import _format_url
-from omnipath._options import options
 from omnipath.constants import QueryType, QueryParams
 from omnipath.requests._request import CommonPostProcessor
 from omnipath.constants._pkg_constants import _Format, _QueryTypeSummary
@@ -38,36 +36,48 @@ class Intercell(CommonPostProcessor):
             data.get("generic_categories", set())
         ) & set(generic_categories)
 
-    @cached_property
-    def _summary(self) -> pd.DataFrame:
-        """Retrieve `intercell` summary data."""
-        return self._downloader.maybe_download(
-            _format_url(options.url, _QueryTypeSummary.INTERCELL),
+    def resources(
+        self, generic_categories: Optional[Union[str, Sequence[str]]] = None
+    ) -> Tuple[str]:
+        """Return resources for this type of query."""
+        if generic_categories is None:
+            return super().resources(generic_categories=None)
+
+        if isinstance(generic_categories, str):
+            generic_categories = (generic_categories,)
+        if not isinstance(generic_categories, Sequence):
+            raise TypeError(
+                f"Expected `generic_categories` to be a `Sequence`, "
+                f"found `{type(generic_categories).__name__}`."
+            )
+
+        if not len(generic_categories):
+            raise ValueError("No generic categories have been selected.")
+
+        return super().resources(generic_categories=generic_categories)
+
+    @property
+    def categories(self) -> Tuple[str]:
+        """Return categories from the `intercell` database from [OmniPath]_."""
+        return self._get_metadata("category")
+
+    @property
+    def generic_categories(self) -> Tuple[str]:
+        """Return generic categories from the `intercell` database from [OmniPath]_."""
+        return self._get_metadata("parent")
+
+    def _get_metadata(self, col: Optional[str]) -> Tuple[str]:
+        """Return unique summary data from column ``col``."""
+        metadata = self._downloader.maybe_download(
+            _format_url(op.options.url, _QueryTypeSummary.INTERCELL),
             params={QueryParams.FORMAT.value: _Format.JSON.value},
             callback=self._json_reader,
         )
 
-    def _get_metadata(self, col: str) -> Tuple[str]:
-        """Return unique summary data from column ``col``."""
-        res = self._summary
+        if col not in metadata.columns:
+            raise KeyError(f"Column `{col}` not found in `{list(metadata.columns)}`.")
 
-        if col not in res.columns:
-            raise KeyError(f"No column named `{col}` in `{list(res.columns)}`.")
-
-        return tuple(pd.unique(res[col].astype(str)))
-
-    @cached_property
-    def categories(self) -> Tuple[str]:
-        """Return categories from the `intercell` database of [OmniPath]_."""
-        return self._get_metadata("category")
-
-    @cached_property
-    def generic_categories(self):
-        """Return generic categories from the `intercell` database of [OmniPath]_."""
-        return self._get_metadata("parent")
-
-    def filter(self) -> pd.DataFrame:  # noqa: D102
-        raise NotImplementedError()
+        return tuple(sorted(pd.unique(metadata[col].astype(str))))
 
 
 __all__ = [Intercell]

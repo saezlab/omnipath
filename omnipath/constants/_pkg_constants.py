@@ -9,9 +9,10 @@ class _DefaultField(Enum):  # noqa: D101
 
 
 @unique
-class _OmnipathEndpoints(Enum):
+class _OmniPathEndpoint(Enum):
     RESOURCES = "resources"
     DATASETS = "datasets"
+    ABOUT = "about"
 
 
 @unique

@@ -1,18 +1,19 @@
 from abc import ABC, ABCMeta, abstractmethod
+from enum import Enum
 from typing import Any, Dict, Tuple, Mapping, Optional, Sequence
 from functools import partial
 
 import pandas as pd
 from pandas.api.types import is_float_dtype, is_numeric_dtype
 
+import omnipath as op
 from omnipath._utils import Downloader, _format_url
-from omnipath._options import options
 from omnipath.constants import Organism, QueryType, QueryParams, InteractionDataset
 from omnipath.constants._pkg_constants import _Format, _DefaultField
 
 
 class OmnipathRequestMeta(ABCMeta):  # noqa: D101
-    # TODO: make sure no intersection in __string__, etc.
+    # TODO: make sure no intersection in __string__, __category__, etc.
     pass
 
 
@@ -23,7 +24,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
     __logical__ = frozenset()
     __categorical__ = frozenset()
 
-    _json_reader = partial(pd.read_json, type="frame")
+    _json_reader = partial(pd.read_json, typ="frame")
     _tsv_reader = partial(pd.read_csv, sep="\t", header=0, squeeze=False)
 
     def __init__(self, query_type: QueryType):
@@ -84,7 +85,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
             else self._tsv_reader
         )
 
-        url = _format_url(options.url, self._query_type)
+        url = _format_url(op.options.url, self._query_type)
 
         return self._post_process(
             self._downloader.maybe_download(url, params=params, callback=callback),
@@ -139,12 +140,12 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         Returns
         -------
         tuple
-            Sequence of sorted resources.
+            Unique and sorted resources.
         """
         return tuple(
             sorted(
                 res
-                for res, params in self._downloader.resources().items()
+                for res, params in self._downloader.resources.items()
                 if self._query_type.value in params["queries"]
                 and self._resource_filter(
                     params["queries"][self._query_type.value], **kwargs
@@ -161,9 +162,16 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
     ) -> Dict[str, Any]:
         # TODO: refactor this function
         for name, value in params.items():
+            # TODO: make instantiating QueryParams print available ones
             _ = QueryParams(name)
-            if isinstance(value, (tuple, list)):
-                params[name] = ",".join(value)
+            if isinstance(value, Sequence) and not isinstance(value, str):
+                params[name] = (
+                    None
+                    if len(value) == 1 and value[0] is None
+                    else ",".join(
+                        str(v.value if isinstance(v, Enum) else v) for v in value
+                    )
+                )
 
         if add_defaults and self._query_type in _DefaultField:
             params[QueryParams.FIELDS.value] = params.get(
@@ -182,7 +190,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
 
         for opt, val in zip(
             (QueryParams.LICENSE, QueryParams.PASSWORD),
-            (options.license.value, options.password),
+            (op.options.license.value, op.options.password),
         ):
             params.setdefault(opt.value, val)
 
