@@ -68,3 +68,6 @@ class Intercell(CommonPostProcessor):
 
     def filter(self) -> pd.DataFrame:  # noqa: D102
         raise NotImplementedError()
+
+
+__all__ = [Intercell]

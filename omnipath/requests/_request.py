@@ -257,3 +257,6 @@ class Enzsub(CommonPostProcessor):
 
     def _resource_filter(self, data: Mapping[str, Any], **_) -> bool:
         return True
+
+
+__all__ = [Enzsub]

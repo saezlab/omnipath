@@ -35,10 +35,9 @@ class Annotations(OmnipathRequestABC):
 
             Maximum number of proteins for `1` request is `600`.
         resources
-            # TODO docrep
             To get available resources, see :meth:`resources`.
         **kwargs
-            # TODO docrep
+            Keyword arguments.
 
         Returns
         -------
@@ -76,3 +75,6 @@ class Annotations(OmnipathRequestABC):
 
     def _resource_filter(self, data: Mapping[str, Any], **_) -> bool:
         return True
+
+
+__all__ = [Annotations]
