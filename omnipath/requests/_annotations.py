@@ -9,6 +9,10 @@ from omnipath.requests._request import OmnipathRequestABC
 class Annotations(OmnipathRequestABC):
     """Class capable of requesting annotations from [OmniPath]_."""
 
+    # TODO: union from superclass (uniprot,genesymbol had to be added here)
+    __string__ = frozenset({"uniprot", "genesymbol", "source", "value"})
+    __categorical__ = frozenset({"entity_type", "label", "source"})
+
     def __init__(self):
         super().__init__(QueryType.ANNOTATIONS)
 

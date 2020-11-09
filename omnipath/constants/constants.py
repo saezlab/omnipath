@@ -9,7 +9,7 @@ class License(Enum):  # noqa: D101
 
 @unique
 class QueryType(Enum):  # noqa: D101
-    ENZSUB = "enz_sub"
+    ENZSUB = "enzsub"
     INTERACTIONS = "interactions"
     COMPLEXES = "complexes"
     ANNOTATIONS = "annotations"

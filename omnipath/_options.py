@@ -53,6 +53,7 @@ class DefaultOptions:  #: noqa: D101
     PROGRESS_BAR: bool = True
 
 
+# TODO: add option to disable autoconvert of dtypes
 @attr.s
 class Options:
     """:mod:`omnipath` options."""

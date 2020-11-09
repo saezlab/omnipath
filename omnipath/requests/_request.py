@@ -160,14 +160,14 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
     def _validate_params(
         self, params: Optional[Dict[str, Any]], add_defaults: bool = True
     ) -> Dict[str, Any]:
-        # TODO: refactor this function
+        # TODO: really refactor this function
         for name, value in params.items():
             # TODO: make instantiating QueryParams print available ones
             _ = QueryParams(name)
             if isinstance(value, Sequence) and not isinstance(value, str):
                 params[name] = (
                     None
-                    if len(value) == 1 and value[0] is None
+                    if all(v is None for v in value)
                     else ",".join(
                         str(v.value if isinstance(v, Enum) else v) for v in value
                     )
@@ -180,8 +180,9 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
             if InteractionDataset.DOROTHEA.value in params.get(QueryParams.RESOURCES):
                 params[QueryParams.FIELDS.value] |= {QueryParams.DOROTHEA_LEVELS.value}
 
-        if QueryParams.RESOURCES.value in params:
-            requested_resources = set(params[QueryParams.RESOURCES.value].split(","))
+        rkey = QueryParams.RESOURCES.value
+        if params.get(rkey, None) is not None:
+            requested_resources = set(params[rkey].split(","))
             unknown_resources = requested_resources - set(self.resources())
 
             if unknown_resources:
@@ -259,6 +260,9 @@ class Enzsub(CommonPostProcessor):
 
     Imports the enzyme-substrate (more exactly, enzyme-PTM) relationship `database <https://omnipathdb.org/enzsub>`__.
     """
+
+    __string__ = frozenset({"enzyme", "substrate"})
+    __categorical__ = frozenset({"residue_type", "modification"})
 
     def __init__(self):
         super().__init__(QueryType.ENZSUB)
