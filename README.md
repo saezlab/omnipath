@@ -1,9 +1,8 @@
 # Python client for the OmniPath web service
 
-**This package is in planning stage, without any useful functionality yet.**
-Contributions are welcome, please contact us at omnipathdb@gmail.com, open
-issues or send pull requests. Otherwise please check out the resources below
-and return to us later.
+This package is in an early stage, basic functionalities like downloading
+data to pandas data frames are supposed to work and are under testing. If
+you experience any issues please open an issue.
 
 ## Installation
 
@@ -44,6 +43,12 @@ a = op.requests.Annotations()
 df = a.get(proteins='Q13976')
 print(df.shape)  # 1134 rows × 7 columns
 ```
+
+## Contributions
+
+Contributions are welcome, please contact us at omnipathdb@gmail.com, open
+issues or send pull requests. Otherwise please check out the resources below
+and return to us later.
 
 ## The OmniPath database
 

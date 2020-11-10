@@ -144,7 +144,7 @@ setup(
     download_url="https://github.com/saezlab/omnipath/releases/",
     project_url=("Git repo", "https://github.com/saezlab/omnipath"),
     classifiers=[
-        "Development Status :: 1 - Planning",
+        "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
