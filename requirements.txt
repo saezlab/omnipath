@@ -1,4 +1,6 @@
---index-url https://pypi.python.org/simple/
-
-pandas
--e .
+attrs>=20.2.0
+future_fstrings>=1.2.0
+pandas>=1.1.4
+requests>=2.24.0
+tqdm>=4.51.0
+urllib3>=1.25.11
