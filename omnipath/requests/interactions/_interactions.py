@@ -275,6 +275,19 @@ class OmniPath(InteractionRequest):
         `Nat Methods 13, 966–967 (2016). <https://doi.org/10.1038/nmeth.4077>`
     """
 
+    # TODO: source, target.
+    __string__ = frozenset({"source", "target", "dip_url"})
+    __logical__ = frozenset(
+        {
+            "is_directed",
+            "is_stimulation",
+            "is_inhibition",
+            "consensus_direction",
+            "consensus_stimulation",
+            "consensus_inhibition",
+        }
+    )
+
     def __init__(self):
         super().__init__(InteractionDataset.OMNIPATH)
 

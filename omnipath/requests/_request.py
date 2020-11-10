@@ -65,9 +65,6 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         # TODO: improve docs, expose parameters, docrep/inject docs
         organism = Organism(organism)
 
-        if resources is None:
-            resources = self.resources(**kwargs)
-
         params = self._validate_params(
             {
                 **kwargs,
@@ -115,7 +112,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
 
         def handle_string(df: pd.DataFrame, columns: frozenset):
             cols = list(frozenset(df.columns) & columns)
-            df[cols] = df[cols].astype("string")
+            df[cols] = df[cols].astype(str)
 
         # TODO: extract the above functions from this scope?
 

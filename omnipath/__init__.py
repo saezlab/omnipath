@@ -1,5 +1,6 @@
 import omnipath.requests as requests
 import omnipath.constants as constants
+import omnipath.requests.utils as utils
 import omnipath.requests.interactions as interactions
 from omnipath._cache import clear_cache
 from omnipath._utils import _get_server_version
