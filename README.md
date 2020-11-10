@@ -5,6 +5,46 @@ Contributions are welcome, please contact us at omnipathdb@gmail.com, open
 issues or send pull requests. Otherwise please check out the resources below
 and return to us later.
 
+## Installation
+
+```bash
+pip install git+https://github.com/saezlab/omnipath.git
+```
+
+## Usage
+
+Some basic examples:
+
+```python3
+import omnipath as op
+
+print(op.__server_version__)
+print(op.options)  # controls similar stuff as in R: url, password, number of retries, cache
+
+# op.clear_cache()  # 2 types of caches: file (pickles) and memory (just a dictionary); default is filecache
+
+e = op.requests.Enzsub()
+print(e.resources())
+df = e.get()
+print(df.shape)  # 39201 rows × 7 columns
+
+df = e.get(resources=['SIGNOR'])
+print(df.shape) # 7669 rows × 7 columns
+
+i = op.requests.Intercell()
+print(i.categories)
+print(i.generic_categories)
+
+d = op.interactions.Dorothea()
+print(d.resources())
+df = d.get(levels='A', types="transcriptional")
+print(df.shape)  # 65788 rows × 11 columns
+
+a = op.requests.Annotations()
+df = a.get(proteins='Q13976')
+print(df.shape)  # 1134 rows × 7 columns
+```
+
 ## The OmniPath database
 
 OmniPath is a database of
