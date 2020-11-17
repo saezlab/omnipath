@@ -1,13 +1,13 @@
-import configparser
-from copy import copy
 from typing import Union, ClassVar, NoReturn, Optional
 from pathlib import Path
 from urllib.parse import urlparse
+import configparser
 
 import attr
 
-from omnipath._cache import Cache, FileCache, MemoryCache
 from omnipath.constants import License
+from omnipath._core.cache._cache import Cache, FileCache, MemoryCache
+from omnipath.constants._pkg_constants import DEFAULT_OPTIONS
 
 
 def _is_positive(_instance, attribute: attr.Attribute, value: int) -> NoReturn:
@@ -19,7 +19,7 @@ def _is_positive(_instance, attribute: attr.Attribute, value: int) -> NoReturn:
 
 
 def _is_non_negative(_instance, attribute: attr.Attribute, value: int) -> NoReturn:
-    """Check whether the ``value`` is positive."""
+    """Check whether the ``value`` is non-negative."""
     if value < 0:
         raise ValueError(
             f"Expected `{attribute.name}` to be non-negative, found `{value}`."
@@ -35,33 +35,47 @@ def _is_valid_url(_instance, _attribute: attr.Attribute, value: str) -> NoReturn
 
 
 def _cache_converter(value: Optional[Union[str, Path]]) -> Cache:
-    """Convert ``value`` to :class:`omnipath._cache.Cache`."""
+    """Convert ``value`` to :class:`omnipath._core.cache.Cache`."""
     if value is None:
-        return DefaultOptions.MEM_CACHE
+        return MemoryCache()
 
     return FileCache(value)
 
 
-class DefaultOptions:  #: noqa: D101
-    URL: str = "https://omnipathdb.org"
-    LICENSE: License = License.ACADEMIC
-    NUM_RETRIES: int = 3
-    TIMEOUT: int = 5
-    CHUNK_SIZE: int = 8196
-    CACHE_DIR: Path = Path.home() / ".cache" / "omnipathdb"
-    MEM_CACHE = MemoryCache()
-    PROGRESS_BAR: bool = True
-
-
-# TODO: add option to disable autoconvert of dtypes
 @attr.s
 class Options:
-    """:mod:`omnipath` options."""
+    """
+    Class defining various :mod:`omnipath` options.
+
+    Parameters
+    ----------
+    url
+        URL of the web service.
+    license
+        License to use when fetching the data.
+    password
+        Password used when performing requests.
+    cache
+        Type of a cache. If `None`, cache files to memory. If a :class:`str`, persist files into a directory.
+    autoload
+        Whether to contant the server at ``url`` during import to get the server version and the most up-to-date
+        query paramters and their valid options.
+    convert_dtypes
+        Whether to convert the data types of the resulting :class:`pandas.DataFrame`.
+    num_retries
+        Number of retries before giving up.
+    timeout
+        Timout in seconds when awaiting response.
+    chunk_size
+        Size in bytes in which to read the data.
+    progress_bar
+        Whether to show the progress bar when downloading data.
+    """
 
     config_path: ClassVar[Path] = Path.home() / ".config" / "omnipathdb.ini"
 
     url: str = attr.ib(
-        default=DefaultOptions.URL,
+        default=DEFAULT_OPTIONS.url,
         validator=[attr.validators.instance_of(str), _is_valid_url],
         on_setattr=attr.setters.validate,
     )
@@ -76,24 +90,34 @@ class Options:
     )
 
     cache: Cache = attr.ib(
-        default=DefaultOptions.CACHE_DIR,
+        default=DEFAULT_OPTIONS.cache_dir,
         converter=_cache_converter,
         kw_only=True,
         on_setattr=attr.setters.convert,
     )
+    autoload: bool = attr.ib(
+        default=DEFAULT_OPTIONS.autoload,
+        validator=attr.validators.instance_of(bool),
+        on_setattr=attr.setters.validate,
+    )
+    convert_dtypes: bool = attr.ib(
+        default=DEFAULT_OPTIONS.convert_dtypes,
+        validator=attr.validators.instance_of(bool),
+        on_setattr=attr.setters.validate,
+    )
 
     num_retries: int = attr.ib(
-        default=DefaultOptions.NUM_RETRIES,
+        default=DEFAULT_OPTIONS.num_retries,
         validator=[attr.validators.instance_of(int), _is_non_negative],
         on_setattr=attr.setters.validate,
     )
     timeout: Union[int, float] = attr.ib(
-        default=DefaultOptions.TIMEOUT,
+        default=DEFAULT_OPTIONS.timeout,
         validator=[attr.validators.instance_of((int, float)), _is_positive],
         on_setattr=attr.setters.validate,
     )
     chunk_size: int = attr.ib(
-        default=DefaultOptions.CHUNK_SIZE,
+        default=DEFAULT_OPTIONS.chunk_size,
         validator=[attr.validators.instance_of(int), _is_positive],
         on_setattr=attr.setters.validate,
     )
@@ -115,6 +139,8 @@ class Options:
             "timeout": self.timeout,
             "chunk_size": self.chunk_size,
             "progress_bar": self.progress_bar,
+            "autoload": self.autoload,
+            "convert_dtypes": self.convert_dtypes,
         }
 
         return config
@@ -125,32 +151,64 @@ class Options:
         if not cls.config_path.is_file():
             return cls().write()
 
-        section = DefaultOptions.URL
+        section = DEFAULT_OPTIONS.url
 
         config = configparser.ConfigParser()
         config.read(cls.config_path)
 
-        cache = config.get(section, "cache_dir", fallback=DefaultOptions.CACHE_DIR)
+        cache = config.get(section, "cache_dir", fallback=DEFAULT_OPTIONS.cache_dir)
         if cache == "None":
             cache = None
 
         return cls(
             url=section,
             license=License(
-                config.get(section, "license", fallback=DefaultOptions.LICENSE)
+                config.get(section, "license", fallback=DEFAULT_OPTIONS.license)
             ),
             num_retries=config.getint(
-                section, "num_retries", fallback=DefaultOptions.NUM_RETRIES
+                section, "num_retries", fallback=DEFAULT_OPTIONS.num_retries
             ),
-            timeout=config.getint(section, "timeout", fallback=DefaultOptions.TIMEOUT),
+            timeout=config.getfloat(
+                section, "timeout", fallback=DEFAULT_OPTIONS.timeout
+            ),
             chunk_size=config.getint(
-                section, "chunk_size", fallback=DefaultOptions.CHUNK_SIZE
+                section, "chunk_size", fallback=DEFAULT_OPTIONS.chunk_size
             ),
-            progress_bar=config.getint(
-                section, "progress_bar", fallback=DefaultOptions.PROGRESS_BAR
+            progress_bar=config.getboolean(
+                section, "progress_bar", fallback=DEFAULT_OPTIONS.progress_bar
+            ),
+            autoload=config.getboolean(
+                section, "autoload", fallback=DEFAULT_OPTIONS.autoload
+            ),
+            convert_dtypes=config.getboolean(
+                section, "convert_dtypes", fallback=DEFAULT_OPTIONS.convert_dtypes
             ),
             cache=cache,
         )
+
+    @classmethod
+    def from_options(cls, options: "Options", **kwargs) -> "Options":
+        """
+        Create new options from previous options.
+
+        Parameters
+        ----------
+        options
+            Options from which to create new ones.
+        **kwargs
+            Keyword arguments overriding attributes from ``options``.
+
+        Returns
+        -------
+            The newly created option.
+        """
+        if not isinstance(options, Options):
+            raise TypeError(
+                f"Expected `options` to be of type `Options`, found `{type(options)}`."
+            )
+
+        kwargs = {k: v for k, v in kwargs.items() if hasattr(options, k)}
+        return cls(**{**options.__dict__, **kwargs})
 
     def write(self) -> NoReturn:
         """Write the current options to a configuration file."""
@@ -163,17 +221,13 @@ class Options:
         return self
 
     def __enter__(self):
-        import omnipath as op
-
-        self._previous_options = copy(op.options)
-        op.options = self
-
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        import omnipath as op
-
-        op.options = self._previous_options
+        pass
 
 
-__all__ = [Options]
+options = Options.from_config()
+
+
+__all__ = [options, Options]

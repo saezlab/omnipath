@@ -32,6 +32,7 @@ exclude = '''
 '''
 
 [tool.isort]
+from_first = true
 line_length = 88
 multi_line_output = 3
 include_trailing_comma = true
@@ -43,4 +44,4 @@ balanced_wrapping = true
 force_grid_wrap = 0
 length_sort = "1"
 indent = "    "
-skip_glob="examples/*.py"
+skip_glob="docs/source/conf.py"

@@ -1,24 +1,23 @@
-import json
 from io import BytesIO
-from typing import Any, Union, Mapping, Callable, Optional
+from copy import copy
+from typing import Any, Mapping, Callable, Optional
 from hashlib import md5
 from functools import lru_cache
 from urllib.parse import urljoin
+import json
+import logging
 
 from requests import Request, Session, PreparedRequest
 from tqdm.auto import tqdm
 from urllib3.util import Retry
 from requests.adapters import HTTPAdapter
 
-import pandas as pd
-
-import omnipath as op
-from omnipath._options import Options
-from omnipath.constants import QueryType, QueryParams
+from omnipath._core.utils._options import Options
 from omnipath.constants._pkg_constants import (
-    _Format,
-    _OmniPathEndpoint,
-    _QueryTypeSummary,
+    UNKNOWN_SERVER_VERSION,
+    Key,
+    Format,
+    Endpoint,
 )
 
 
@@ -27,16 +26,24 @@ class Downloader:
     Class which performs a GET request to the server in order to retrieve some remote resources.
 
     Also implements other behavior, such as retrying after some status codes.
+
+    Parameters
+    ----------
+    opts
+        Options. If `None`, :attr:`omnipath.options` are used.
     """
 
-    def __init__(self):
-        self._session = Session()
-        self._cacher = op.options.cache
+    def __init__(self, opts: Optional[Options] = None):
+        if opts is None:
+            from omnipath import options as opts
 
-        if op.options.num_retries > 0:
+        self._session = Session()
+        self._options = copy(opts)
+
+        if self._options.num_retries > 0:
             adapter = HTTPAdapter(
                 max_retries=Retry(
-                    total=op.options.num_retries,
+                    total=self._options.num_retries,
                     redirect=5,
                     method_whitelist=["HEAD", "GET", "OPTIONS"],
                     status_forcelist=[413, 429, 500, 502, 503, 504],
@@ -46,12 +53,17 @@ class Downloader:
             self._session.mount("http://", adapter)
             self._session.mount("https://", adapter)
 
+        logging.debug(f"Initialized `{self}`")
+
     @property
     def resources(self) -> Mapping[str, Mapping[str, Any]]:
-        """Return resources under :attr`omnipath.options.url`."""
+        """Return the resources."""
+        logging.debug("Fetching resources")
         return self.maybe_download(
-            urljoin(op.options.url, _OmniPathEndpoint.RESOURCES.value),
+            Endpoint.RESOURCES.s,
+            params={Key.FORMAT.s: Format.JSON.s},
             callback=json.load,
+            is_final=False,
         )
 
     def maybe_download(
@@ -60,7 +72,8 @@ class Downloader:
         callback: Callable[[BytesIO], Any],
         params: Optional[Mapping[str, str]] = None,
         cache: bool = True,
-        **kwargs,
+        is_final: bool = True,
+        **_,
     ) -> Any:
         """
         Fetch the data from the cache, if present, or download them from the ``url``.
@@ -78,20 +91,21 @@ class Downloader:
             Parameters of the `GET` request.
         cache
             Whether to save the files to the cache or not.
-        **kwargs
-            Keyword arguments for :class`requests.Request`.
+        is_final
+            Whether ``url`` is final or should be prefixed with :paramref:`_options.url`.
 
         Returns
         -------
         :class:`typing.Any`
             The result of applying ``callback`` on the maybe downloaded data.
         """
-        # TODO: more informative key?
-        if callback is not None and not callable(callback):
+        if not callable(callback):
             raise TypeError(
-                f"Expected `callback` to be either `None` or `callable`, "
-                f"found `{type(callback).__name__}`."
+                f"Expected `callback` to be `callable`, found `{type(callback).__name__}`."
             )
+
+        if not is_final:
+            url = urljoin(self._options.url, url)
 
         req = self._session.prepare_request(
             Request(
@@ -99,17 +113,20 @@ class Downloader:
                 url,
                 params=params,
                 headers={"User-agent": "omnipathdb-user"},
-                **kwargs,
             )
         )
         key = md5(bytes(req.url, encoding="utf-8")).hexdigest()
 
-        if key in self._cacher:
-            res = self._cacher[key]
+        if key in self._options.cache:
+            logging.debug(f"Found data in cache `{self._options.cache}[{key!r}]`")
+            res = self._options.cache[key]
         else:
             res = callback(self._download(req))
             if cache:
-                self._cacher[key] = res
+                logging.debug(f"Caching result to `{self._options.cache}[{key!r}]`")
+                self._options.cache[key] = res
+            else:
+                logging.debug("Not caching the results")
 
         return res
 
@@ -127,9 +144,12 @@ class Downloader:
         :class:`io.BytesIO`
             File-like object containing the data. Usually a json- or csv-like data is present inside.
         """
-        handle = BytesIO()
+        logging.info(f"Downloading data from `{req.url}`")
 
-        with self._session.send(req, stream=True, timeout=op.options.timeout) as resp:
+        handle = BytesIO()
+        with self._session.send(
+            req, stream=True, timeout=self._options.timeout
+        ) as resp:
             resp.raise_for_status()
 
             with tqdm(
@@ -138,75 +158,57 @@ class Downloader:
                 miniters=1,
                 unit_divisor=1024,
                 total=len(resp.content),
-                disable=not op.options.progress_bar,
+                disable=not self._options.progress_bar,
             ) as t:
-                for chunk in resp.iter_content(chunk_size=op.options.chunk_size):
-                    handle.write(chunk)
+                for chunk in resp.iter_content(chunk_size=self._options.chunk_size):
                     t.update(len(chunk))
+                    handle.write(chunk)
 
                 handle.flush()
                 handle.seek(0)
 
         return handle
 
+    def __str__(self) -> str:
+        return f"<{self.__class__.__name__}[options={self._options}]>"
 
-def _strip_resource_labels(df: pd.DataFrame, inplace: bool = True):
-    # TODO
-    pass
-
-
-def _format_url(
-    url: str, query: Union[QueryType, _QueryTypeSummary, _OmniPathEndpoint]
-) -> str:
-    """
-    Format the ``url`` according to the ``query``.
-
-    Parameters
-    ----------
-    url
-        URL to format.
-    query
-        Type of query to be performed.
-
-    Returns
-    -------
-    str
-        The formatted URL.
-    """
-    if not isinstance(query, (QueryType, _QueryTypeSummary, _OmniPathEndpoint)):
-        raise TypeError(
-            f"Expected `query` to be either `QueryType`, `_QueryTypeSummary` or `_OmniPathEndpoint` "
-            f"found `{type(query).__name__}`."
-        )
-
-    return urljoin(url, query.value)
+    def __repr__(self) -> str:
+        return str(self)
 
 
 @lru_cache()
 def _get_server_version() -> str:
+    """Try and get the server version."""
     import re
 
+    from omnipath import options
+
     def callback(fp: BytesIO) -> str:
+        """Parse the version."""
         return re.findall(
             r"\d+\.\d+.\d+", fp.getvalue().decode("utf-8"), flags=re.IGNORECASE
         )[0]
 
     try:
-        with Options(
-            url=op.options.url,
-            password=op.options.password,
-            license=op.options.license,
+        if not options.autoload:
+            raise ValueError("Autoload is disallowed.")
+
+        with Options.from_options(
+            options,
             num_retries=0,
             timeout=0.1,
             cache=None,
             progress_bar=False,
             chunk_size=1024,
-        ):
-            return Downloader().maybe_download(
-                _format_url(op.options.url, _OmniPathEndpoint.ABOUT),
+        ) as opt:
+            return Downloader(opt).maybe_download(
+                Endpoint.ABOUT.s,
                 callback,
-                params={QueryParams.FORMAT.value: _Format.TEXT.value},
+                params={Key.FORMAT.s: Format.TEXT.s},
                 cache=False,
+                is_final=False,
             )
-    except Exception:
-        return "UNKNOWN"
+    except Exception as e:
+        logging.debug(f"Unable to get server version. Reason `{e}`")
+
+        return UNKNOWN_SERVER_VERSION

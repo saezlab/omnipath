@@ -1,6 +1,10 @@
 attrs>=20.2.0
+docrep>=0.3.1
+enum_tools>=0.6.1
 future_fstrings>=1.2.0
+inflect>=4.1.0
 pandas>=1.1.4
 requests>=2.24.0
 tqdm>=4.51.0
 urllib3>=1.25.11
+wrapt>=1.12.0

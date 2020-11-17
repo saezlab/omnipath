@@ -1,13 +1,26 @@
+from omnipath._core.cache import clear_cache
+from omnipath._core.utils import options  # from_first in isort is important here
+from omnipath._core.downloader._downloader import _get_server_version
 import omnipath.requests as requests
 import omnipath.constants as constants
-import omnipath.requests.utils as utils
-import omnipath.requests.interactions as interactions
-from omnipath._cache import clear_cache
-from omnipath._utils import _get_server_version
-from omnipath._options import Options
+import omnipath.interactions as interactions
 
-options = Options.from_config()
+__author__ = ", ".join(["Michal Klein", "Dénes Türei"])
+__maintainer__ = ", ".join(["Michal Klein", "Dénes Türei"])
+__version__ = "0.0.0"
+__email__ = "turei.denes@gmail.com"
+
+try:
+    from importlib_metadata import version  # Python < 3.8
+except ImportError:
+    from importlib.metadata import version  # Python = 3.8
+
+from packaging.version import parse
+
+__full_version__ = parse(version(__name__))
+__full_version__ = (
+    f"{__version__}+{__full_version__.local}" if __full_version__.local else __version__
+)
 __server_version__ = _get_server_version()
 
-del Options
-del _get_server_version
+del parse, version, _get_server_version

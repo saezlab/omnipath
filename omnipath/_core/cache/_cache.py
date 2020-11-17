@@ -1,9 +1,9 @@
-import os
-import pickle
 from abc import ABC, abstractmethod
 from shutil import rmtree
-from typing import Any, Union, NoReturn, Optional
+from typing import Any, Union, Optional
 from pathlib import Path
+import os
+import pickle
 
 
 class Cache(ABC):
@@ -14,7 +14,7 @@ class Cache(ABC):
         pass
 
     @abstractmethod
-    def __setitem__(self, key: str, value: Any) -> NoReturn:
+    def __setitem__(self, key: str, value: Any) -> None:
         pass
 
     @abstractmethod
@@ -22,7 +22,7 @@ class Cache(ABC):
         pass
 
     @abstractmethod
-    def clear(self) -> NoReturn:  # noqa: D102
+    def clear(self) -> None:  # noqa: D102
         pass
 
     @property
@@ -99,7 +99,7 @@ class FileCache(Cache):
         """Return the directory where the cache files are stored."""
         return self._cache_dir
 
-    def clear(self) -> NoReturn:
+    def clear(self) -> None:
         """Remove all files and the directory under :paramref:`path`."""
         if self._cache_dir.is_dir():
             rmtree(self._cache_dir)
@@ -113,7 +113,7 @@ class MemoryCache(dict, Cache):
 
     @property
     def path(self) -> None:
-        """Return nothing."""
+        """Return `None`."""
         return None
 
     def __str__(self) -> str:
@@ -122,9 +122,12 @@ class MemoryCache(dict, Cache):
     def __repr__(self) -> str:
         return str(self)
 
+    def __copy__(self) -> "MemoryCache":
+        return self
 
-def clear_cache() -> NoReturn:
-    """Remove all files from the cache :attr:`omnipath.options.cache`."""
+
+def clear_cache() -> None:
+    """Remove all cached data from :attr:`omnipath.options.cache`."""
     from omnipath import options
 
     options.cache.clear()

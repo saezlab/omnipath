@@ -1,9 +1,1 @@
-from omnipath.constants.constants import (
-    License,
-    Organism,
-    QueryType,
-    QueryParams,
-    DorotheaLevels,
-    TFtargetLevels,
-    InteractionDataset,
-)
+from omnipath.constants._constants import License, Organism, InteractionDataset

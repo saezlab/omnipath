@@ -12,33 +12,44 @@
 #
 #  Website: http://omnipathdb.org/
 #
-
-__revision__ = "$Id$"
+from pathlib import Path
 
 from setuptools import setup, find_packages
 
-__version__ = "0.0.1"
-
-
-def _read_requirements():
-
-    with open("requirements.txt") as fp:
-
-        requirements = [
-            name.strip() for name in fp if name and not name.startswith("-")
-        ]
-
-    return requirements
+try:
+    from omnipath import __email__, __author__, __version__, __maintainer__
+except ImportError:
+    __author__ = "Michal Klein, Dénes Türei"
+    __maintainer__ = "Michal Klein, Dénes Türei"
+    __email__ = "turei.denes@gmail.com"
+    __version__ = "0.0.0"
 
 
 setup(
+    # general
     name="omnipath",
+    use_scm_version=True,
+    setup_requires=["setuptools_scm"],
+    # version
     version=__version__,
-    maintainer="Dénes Türei",
-    maintainer_email="turei.denes@gmail.com",
-    author="Dénes Türei",
-    author_email="turei.denes@gmail.com",
+    author=__author__,
+    author_email=__email__,
+    maintainer=__maintainer__,
+    maintainer_email=__email__,
+    # description
+    description=Path("README.rst").read_text("utf-8").splitlines()[3],
+    long_description=Path("README.rst").read_text("utf-8"),
     description_content_type="text/x-rst; charset=UTF-8",
+    # links
+    url="https://omnipathdb.org/",
+    download_url="https://github.com/saezlab/omnipath/releases/",
+    project_urls={
+        "Documentation": "https://omnipath.readthedocs.io/en/latest",
+        "Source Code": "https://github.com/saezlab/omnipath",
+    },
+    license="MIT",
+    platforms=["Linux", "Unix", "MacOSX", "Windows"],
+    # keywords
     keywords=sorted(
         {
             "protein",
@@ -137,36 +148,43 @@ setup(
             "signaling pathway",
         }
     ),
-    # description = 'Molecular signaling prior knowledge in Python',
-    license="GPLv3",
-    platforms=["Linux", "Unix", "MacOSX", "Windows"],
-    url="https://omnipathdb.org/",
-    download_url="https://github.com/saezlab/omnipath/releases/",
-    project_url=("Git repo", "https://github.com/saezlab/omnipath"),
     classifiers=[
         "Development Status :: 1 - Planning",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python",
         "Natural Language :: English",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
     # package installation
-    packages=list(set(find_packages() + ["omnipath"])),
-    include_package_data=True,
+    packages=find_packages(),
+    zip_safe=False,
+    python_required=">=3.6",
+    include_package_data=False,
     # dependency_links = deplinks
-    install_requires=_read_requirements(),
+    install_requires=list(
+        map(
+            str.strip,
+            Path("requirements.txt").read_text("utf-8").splitlines(),
+        )
+    ),
     extras_require={
         "tests": [
             "tox>=3.20.1",
         ],
         "docs": [
-            "sphinx>=3.3.0",
+            line
+            for line in (Path("docs") / "requirements.txt")
+            .read_text("utf-8")
+            .splitlines()
+            if not line.startswith("-r")
         ],
-        "dev": [
-            "pre-commit>=2.7.1",
-        ],
+        "dev": ["pre-commit>=2.7.1", "bump2version"],
     },
 )
