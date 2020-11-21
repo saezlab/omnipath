@@ -1,12 +1,7 @@
-|PyPI| |Travis| |Docs|
+|PyPI| |CI| |Docs| |Coverage|
 
 Python client for the OmniPath web service
 ==========================================
-
-**This package is in planning stage, without any useful functionality yet.**
-Contributions are welcome, please contact us at omnipathdb@gmail.com, open
-issues or send pull requests. Otherwise please check out the resources below
-and return to us later.
 
 The OmniPath database
 ---------------------
@@ -65,9 +60,13 @@ certain (not all) annotations of the proteins.
     :target: https://pypi.org/project/omnipath
     :alt: PyPI
 
-.. |Travis| image:: https://travis-ci.org/theislab/omnipath.svg?branch=master
-    :target: https://travis-ci.com/github/saezlab/omnipath
+.. |CI| image:: https://img.shields.io/github/workflow/status/michalk8/omnipath/CI/master
+    :target: https://github.com/michalk8/omnipath/actions?query=workflow:CI
     :alt: CI
+
+.. |Coverage| image:: https://codecov.io/gh/michalk8/omnipath/branch/master/graph/badge.svg?token=5A086KQA51
+    :target: https://codecov.io/gh/michalk8/omnipath
+    :alt: Coverage
 
 .. |Docs|  image:: https://img.shields.io/readthedocs/omnipath
     :target: https://omnipath.readthedocs.io/en/latest

@@ -2,7 +2,6 @@ from io import BytesIO
 from copy import copy
 from typing import Any, Mapping, Callable, Optional
 from hashlib import md5
-from functools import lru_cache
 from urllib.parse import urljoin
 import json
 import logging
@@ -37,15 +36,20 @@ class Downloader:
         if opts is None:
             from omnipath import options as opts
 
+        if not isinstance(opts, Options):
+            raise TypeError(
+                f"Expected `opts` to be of type `Options`, found {type(opts).__name__}."
+            )
+
         self._session = Session()
-        self._options = copy(opts)
+        self._options = copy(opts)  # this does not copy MemoryCache
 
         if self._options.num_retries > 0:
             adapter = HTTPAdapter(
                 max_retries=Retry(
                     total=self._options.num_retries,
                     redirect=5,
-                    method_whitelist=["HEAD", "GET", "OPTIONS"],
+                    allowed_methods=["HEAD", "GET", "OPTIONS"],
                     status_forcelist=[413, 429, 500, 502, 503, 504],
                     backoff_factor=1,
                 )
@@ -176,12 +180,9 @@ class Downloader:
         return str(self)
 
 
-@lru_cache()
-def _get_server_version() -> str:
+def _get_server_version(options: Options) -> str:
     """Try and get the server version."""
     import re
-
-    from omnipath import options
 
     def callback(fp: BytesIO) -> str:
         """Parse the version."""
@@ -191,7 +192,7 @@ def _get_server_version() -> str:
 
     try:
         if not options.autoload:
-            raise ValueError("Autoload is disallowed.")
+            raise ValueError("Autoload is disabled.")
 
         with Options.from_options(
             options,
@@ -209,6 +210,6 @@ def _get_server_version() -> str:
                 is_final=False,
             )
     except Exception as e:
-        logging.debug(f"Unable to get server version. Reason `{e}`")
+        logging.debug(f"Unable to get server version. Reason: `{e}`")
 
         return UNKNOWN_SERVER_VERSION

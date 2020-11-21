@@ -1,15 +1,16 @@
-from typing import Any, Tuple, Mapping, Iterable, Optional, Sequence, final
+from typing import Any, Tuple, Mapping, Iterable, Optional, Sequence
 
 import pandas as pd
 
 from omnipath._core.query import QueryType
 from omnipath._core.query._types import Strseq_t
-from omnipath._core.requests._request import CommonPostProcessor
-from omnipath.constants._pkg_constants import Key, Format
+from omnipath._core.requests._request import OrganismGenesymbolsRemover
+from omnipath.constants._pkg_constants import Key, Format, final
+from omnipath._core.query._query_validator import _to_string_set
 
 
 @final
-class Intercell(CommonPostProcessor):
+class Intercell(OrganismGenesymbolsRemover):
     """
     Request `intercell` annotations from [OmniPath]_.
 
@@ -32,9 +33,9 @@ class Intercell(CommonPostProcessor):
         generic_categories: Optional[Sequence[str]] = None,
         **kwargs,
     ) -> bool:
-        return generic_categories is None or set(
+        return generic_categories is None or _to_string_set(
             data.get(Key.GENERIC_CATEGORIES.s, set())
-        ) & set(generic_categories)
+        ) & _to_string_set(generic_categories)
 
     @classmethod
     def resources(cls, generic_categories: Strseq_t = None) -> Tuple[str]:

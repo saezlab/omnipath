@@ -6,7 +6,6 @@ from inflect import engine
 
 from omnipath.constants._constants import FormatterMeta, ErrorFormatter
 from omnipath._core.query._query_validator import (
-    DummyValidator,
     EnzsubValidator,
     ComplexesValidator,
     IntercellValidator,
@@ -58,8 +57,7 @@ class SynonymizerMeta(EnumMeta, ABCMeta):  # noqa: D101
             for i, synonym in enumerate(_get_synonyms(k.lower())):
                 attributedict[f"{k}_{i}"] = synonym
 
-        res = super().__new__(cls, clsname, superclasses, attributedict)
-        return res
+        return super().__new__(cls, clsname, superclasses, attributedict)
 
 
 class QueryMeta(SynonymizerMeta, FormatterMeta):  # noqa: D101
@@ -69,13 +67,13 @@ class QueryMeta(SynonymizerMeta, FormatterMeta):  # noqa: D101
 class Query(ErrorFormatter, Enum, metaclass=QueryMeta):  # noqa: D101
     @property
     def _query_name(self) -> str:
-        """Convert synonym to actual query parameter name."""
+        """Convert the synonym to an actual query parameter name."""
         return "_".join(self.name.split("_")[:-1])
 
     @property
-    def _delagate(self):
+    def _delegate(self):
         """Delegate the validation."""
-        return getattr(self.__validator__, self._query_name, DummyValidator)
+        return getattr(self.__validator__, self._query_name)
 
     @property
     def param(self) -> str:
@@ -85,23 +83,23 @@ class Query(ErrorFormatter, Enum, metaclass=QueryMeta):  # noqa: D101
     @property
     def valid(self) -> Optional[FrozenSet[str]]:
         """Return the set of valid values for :paramref:`param`."""
-        return self._delagate.valid
+        return self._delegate.valid
 
     @property
     def annotation(self) -> type:
         """Return type annotations for :paramref:`param`."""
-        return self._delagate.annotation
+        return self._delegate.annotation
 
     @property
     def doc(self) -> Optional[str]:
         """Return the docstring for :paramref:`param`."""
-        return self._delagate.doc
+        return self._delegate.doc
 
     def __call__(
         self, value: Optional[Union[str, Sequence[str]]]
     ) -> Optional[Set[str]]:
         """%(validate)s"""  # noqa: D401
-        return self._delagate(value)
+        return self._delegate(value)
 
 
 class EnzsubQuery(Query):  # noqa: D101
@@ -139,5 +137,14 @@ class QueryType(Enum):  # noqa: D101
 
     @property
     def endpoint(self) -> str:
-        """Get the API endpoint for this type of query.."""
+        """Get the API endpoint for this type of query."""
         return self.name.lower()
+
+
+__all__ = [
+    EnzsubQuery,
+    InteractionsQuery,
+    ComplexesQuery,
+    AnnotationsQuery,
+    IntercellQuery,
+]

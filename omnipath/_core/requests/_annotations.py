@@ -1,11 +1,11 @@
-from typing import Any, Dict, Union, Mapping, Iterable, final
+from typing import Any, Dict, Union, Mapping, Iterable
 
 import pandas as pd
 
 from omnipath._core.query import QueryType
 from omnipath._core.utils._docs import d
 from omnipath._core.requests._request import OmnipathRequestABC
-from omnipath.constants._pkg_constants import Key
+from omnipath.constants._pkg_constants import Key, final
 
 
 @final
@@ -22,6 +22,7 @@ class Annotations(OmnipathRequestABC):
 
         return params
 
+    @classmethod
     @d.dedent
     def params(cls) -> Dict[str, Any]:
         """%(query_params)s"""
@@ -68,10 +69,10 @@ class Annotations(OmnipathRequestABC):
 
         if len(proteins) > 600:
             raise ValueError(
-                "Cannot download information for more than `600` proteins yet."
+                "Cannot download annotations for more than `600` proteins yet."
             )
 
-        return super()._get(proteins=proteins, **kwargs)
+        return cls()._get(proteins=proteins, **kwargs)
 
     def _resource_filter(self, data: Mapping[str, Any], **_) -> bool:
         return True

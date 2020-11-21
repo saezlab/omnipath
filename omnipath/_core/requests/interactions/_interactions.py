@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Tuple, Union, Mapping, Iterable, Optional, Sequence, final
+from typing import Any, Set, Dict, Tuple, Union, Mapping, Iterable, Optional, Sequence
 
 import pandas as pd
 
@@ -8,9 +8,25 @@ from omnipath._core.query import QueryType
 from omnipath._core.utils._docs import d
 from omnipath._core.requests._utils import _inject_params
 from omnipath._core.requests._request import CommonPostProcessor
-from omnipath.constants._pkg_constants import Key
+from omnipath.constants._pkg_constants import Key, final
 
 Datasets_t = Union[str, InteractionDataset, Sequence[str], Sequence[InteractionDataset]]
+
+
+def _to_dataset_set(
+    datasets, name: str, none_value: Iterable[InteractionDataset]
+) -> Set[InteractionDataset]:
+    if isinstance(datasets, (str, InteractionDataset)):
+        datasets = (datasets,)
+    elif datasets is None:
+        datasets = none_value
+
+    if not isinstance(datasets, Iterable):
+        raise TypeError(
+            f"Expected `{name}` to be an `Iterable`, found `{type(datasets).__name__}`."
+        )
+
+    return {InteractionDataset(d) for d in datasets}
 
 
 @d.dedent
@@ -51,23 +67,13 @@ class InteractionRequest(CommonPostProcessor, ABC):
     ):
         super().__init__()
 
-        if isinstance(datasets, (str, InteractionDataset)):
-            datasets = (datasets,)
-        elif datasets is None:
-            datasets = set(InteractionDataset)
-
-        if not isinstance(datasets, Iterable):
-            raise TypeError(
-                f"Expected `datasets` to be an `Iterable`, found `{type(datasets).__name__}`."
-            )
-
-        datasets = {InteractionDataset(d) for d in datasets}
-        exclude = set() if exclude is None else {InteractionDataset(e) for e in exclude}
+        datasets = _to_dataset_set(datasets, "datasets", set(InteractionDataset))
+        exclude = _to_dataset_set(exclude, "exclude", set())
         datasets = datasets - exclude
 
         if not len(datasets):
             raise ValueError(
-                f"After excluding `{sorted(exclude)}` datasets, none were left."
+                f"After excluding `{len(exclude)}` datasets, none were left."
             )
 
         self._datasets = datasets
@@ -95,7 +101,7 @@ class InteractionRequest(CommonPostProcessor, ABC):
         datasets: Optional[Sequence[InteractionDataset]] = None,
     ) -> bool:
         res = datasets is None or (
-            {InteractionDataset(d) for d in data[Key.DATASETS.s]}
+            {InteractionDataset(d) for d in data.get(Key.DATASETS.s, {})}
             & {InteractionDataset(d) for d in datasets}
         )
 
@@ -216,11 +222,10 @@ class Transcriptional(InteractionRequest):
     """
     Request all `TF-target` interactions of [OmniPath]_.
 
-    Imports the `dataset <https://omnipathdb.org/interactions?datasets=tf_target,dorothea>`__ which contains
+    Imports the `dataset <https://omnipathdb.org/interactions?datasets=dorothea,tf_target>`__ which contains
     transcription factor-target protein coding gene interactions.
     """
 
-    # TODO: needs to be checked
     def __init__(self):
         super().__init__((InteractionDataset.DOROTHEA, InteractionDataset.TF_TARGET))
 
@@ -269,7 +274,7 @@ class lncRNAmRNA(CommonParamFilter):
 
 
 @final
-class OmniPath(CommonParamFilter):
+class OmniPath(InteractionRequest):
     """
     Request interactions from the `omnipath` dataset.
 
@@ -278,6 +283,10 @@ class OmniPath(CommonParamFilter):
 
     This part of the interaction database was compiled in a similar way as it has been presented in [OmniPath16]_.
     """
+
+    @classmethod
+    def _filter_params(cls, params: Dict[str, Any]) -> Dict[str, Any]:
+        return super()._filter_params(params)
 
     __string__ = frozenset({"source", "target", "dip_url"})
     __logical__ = frozenset(
@@ -327,7 +336,9 @@ class AllInteractions(InteractionRequest):
     @classmethod
     @d.dedent
     @final
-    def get(cls, exclude: Optional[Sequence[str]], **kwargs) -> pd.DataFrame:
+    def get(
+        cls, exclude: Optional[Sequence[Datasets_t]] = None, **kwargs
+    ) -> pd.DataFrame:
         """
         %(get.full_desc)s
 

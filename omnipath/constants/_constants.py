@@ -71,10 +71,11 @@ class PrettyEnumMixin(ErrorFormatter, NoValue, metaclass=FormatterMeta):
 
 
 @unique
+@document_enum
 class License(PrettyEnumMixin):
     """License types."""
 
-    ACADEMIC = "academic"  # doc: academic license.
+    ACADEMIC = "academic"  # doc: Academic license.
     COMMERCIAL = "commercial"  # doc: Commercial license.
 
 

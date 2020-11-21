@@ -5,14 +5,15 @@ from inspect import Parameter, unwrap, isabstract
 import inspect
 
 import wrapt
+import typing_extensions  # noqa: F401
 
 import pandas as pd
 
 from omnipath._core.utils._docs import d
 
 
-@d.get_full_descriptionf("get")
-@d.get_sectionsf("get", sections=["Parameters", "Returns"])
+@d.get_full_description(base="get")
+@d.get_sections(base="get", sections=["Parameters", "Returns"])
 def _get_helper(cls: type, **kwargs) -> pd.DataFrame:
     """
     Perform a request to the [OmniPath]_ web service.
@@ -79,10 +80,12 @@ def _inject_api_method(
             + [Parameter("kwargs", kind=Parameter.VAR_KEYWORD)]
         )
         # modify locals() for argspec factory
+        import omnipath  # noqa: F401
+
         NoneType, pandas = type(None), pd
 
         exec(
-            f"def adapter{sig}: pass",
+            f"def adapter{sig}: pass".replace(" /,", ""),
             globals(),
             locals(),
         )
@@ -126,16 +129,23 @@ def _inject_params(
 
 
 def _split_unique_join(data: pd.Series, func: Optional[Callable] = None) -> pd.Series:
-    data = data.astype(str).str.split(";")
+    mask = ~pd.isnull(data.astype("string"))
+    data = data[mask]
+    data = data.str.split(";")
 
     if func is None:
-        return data.apply(
+        data = data.apply(
             lambda row: ";".join(sorted(set(map(str, row))))
             if isinstance(row, Iterable)
-            else ""
+            else row
         )
+    else:
+        data = data.apply(func)
 
-    return data.apply(func)
+    res = pd.Series([None] * len(mask))
+    res.loc[mask] = data
+
+    return res
 
 
 def _strip_resource_label(
