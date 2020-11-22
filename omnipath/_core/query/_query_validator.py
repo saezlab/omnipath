@@ -22,14 +22,16 @@ from omnipath._core.query._types import (
     Bool_t,
     None_t,
     Strseq_t,
+    License_t,
     Organism_t,
 )
 from omnipath._core.utils._options import Options
 from omnipath.constants._constants import NoValue
+from omnipath.constants._pkg_constants import Key, Format
 from omnipath._core.downloader._downloader import Downloader
 
 
-def _to_string_set(item: Union[str, Sequence[str]]) -> Set[str]:
+def _to_string_set(item: Union[Any, Sequence[Any]]) -> Set[str]:
     """
     Convert ``item`` to a `str` set.
 
@@ -107,6 +109,8 @@ class ServerValidatorMeta(EnumMeta, ABCMeta):  # noqa: D101
             """
             if needle is None:
                 return None
+            elif isinstance(needle, bool):
+                needle = int(needle)
 
             needle = _to_string_set(needle)
             if self.haystack is None:
@@ -137,7 +141,7 @@ class ServerValidatorMeta(EnumMeta, ABCMeta):  # noqa: D101
         )
         use_default = True
         old_members = list(attributedict._member_names)
-        old_values = []
+        old_values = cls._remove_old_members(attributedict)
 
         if endpoint is None:
             if len(old_members):
@@ -156,14 +160,11 @@ class ServerValidatorMeta(EnumMeta, ABCMeta):  # noqa: D101
             ) as opt:
                 try:
                     logging.debug("Attempting to construct classes from the server")
-
-                    url = urljoin(urljoin(opt.url, "queries/"), endpoint)
                     res = Downloader(opt).maybe_download(
-                        url, callback=json.load, params={"format": "json"}
+                        urljoin(urljoin(opt.url, f"{Key.QUERIES.s}/"), endpoint),
+                        callback=json.load,
+                        params={Key.FORMAT.s: Format.JSON.s},
                     )
-
-                    # remove the default values
-                    old_values = cls._remove_old_members(attributedict)
 
                     if len({str(k).upper() for k in res.keys()}) != len(res):
                         raise RuntimeError(
@@ -188,16 +189,16 @@ class ServerValidatorMeta(EnumMeta, ABCMeta):  # noqa: D101
                             attributedict[key] = cls.Validator(param=k)
                 except Exception as e:
                     logging.debug(
-                        f"Unable to construct classes from the server. Reason `{e}`"
+                        f"Unable to construct classes from the server. Reason: `{e}`"
                     )
                     use_default = True
 
         if use_default:
-            if endpoint not in (None, "dummy"):
+            if endpoint is not None:
                 logging.debug(
-                    f"Using predifined class: `{clsname}`." + ""
+                    f"Using predefined class: `{clsname}`." + ""
                     if options.autoload
-                    else " Consider specifying `omnipath.options.autoload=True`"
+                    else " Consider specifying `omnipath.options.autoload = True`"
                 )
 
             _ = cls._remove_old_members(attributedict)
@@ -250,7 +251,7 @@ class EnzsubValidator(QueryValidatorMixin):  # noqa: D101
     FORMAT: Str_t = ()
     GENESYMBOLS: Bool_t = ()
     HEADER: Str_t = ()
-    LICENSE: Str_t = ()
+    LICENSE: License_t = ()
     LIMIT: Int_t = ()
     MODIFICATION: Str_t = ()
     ORGANISMS: Organism_t = ()
@@ -273,7 +274,7 @@ class InteractionsValidator(QueryValidatorMixin):  # noqa: D101
     FORMAT: Str_t = ()
     GENESYMBOLS: Bool_t = ()
     HEADER: Str_t = ()
-    LICENSE: Str_t = ()
+    LICENSE: License_t = ()
     LIMIT: Int_t = ()
     ORGANISMS: Organism_t = ()
     PARTNERS: Strseq_t = ()
@@ -293,7 +294,7 @@ class ComplexesValidator(QueryValidatorMixin):  # noqa: D101
     FIELDS: Strseq_t = ()
     FORMAT: Str_t = ()
     HEADER: Str_t = ()
-    LICENSE: Str_t = ()
+    LICENSE: License_t = ()
     LIMIT: Int_t = ()
     PASSWORD: Str_t = ()
     PROTEINS: Strseq_t = ()
@@ -307,7 +308,7 @@ class AnnotationsValidator(QueryValidatorMixin):  # noqa: D101
     FORMAT: Str_t = ()
     GENESYMBOLS: Bool_t = ()
     HEADER: Str_t = ()
-    LICENSE: Str_t = ()
+    LICENSE: License_t = ()
     LIMIT: Int_t = ()
     PASSWORD: Str_t = ()
     PROTEINS: Strseq_t = ()
@@ -323,7 +324,7 @@ class IntercellValidator(QueryValidatorMixin):  # noqa: D101
     FIELDS: Strseq_t = ()
     FORMAT: Str_t = ()
     HEADER: None_t = ()
-    LICENSE: Str_t = ()
+    LICENSE: License_t = ()
     LIMIT: Int_t = ()
     PARENT: Str_t = ()
     PASSWORD: Str_t = ()
@@ -342,10 +343,6 @@ class IntercellValidator(QueryValidatorMixin):  # noqa: D101
     TOPOLOGY: Str_t = ()
     TRANS: Bool_t = ()
     TRANSMITTER: Bool_t = ()
-
-
-class DummyValidator(QueryValidatorMixin):  # noqa: D101
-    pass
 
 
 __all__ = [

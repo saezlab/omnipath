@@ -125,6 +125,10 @@ class MemoryCache(dict, Cache):
     def __copy__(self) -> "MemoryCache":
         return self
 
+    def copy(self) -> "MemoryCache":
+        """Return self."""
+        return self
+
 
 def clear_cache() -> None:
     """Remove all cached data from :attr:`omnipath.options.cache`."""

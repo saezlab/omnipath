@@ -40,6 +40,7 @@ setup(
     description=Path("README.rst").read_text("utf-8").splitlines()[3],
     long_description=Path("README.rst").read_text("utf-8"),
     description_content_type="text/x-rst; charset=UTF-8",
+    long_description_content_type="text/x-rst; charset=UTF-8",
     # links
     url="https://omnipathdb.org/",
     download_url="https://github.com/saezlab/omnipath/releases/",
@@ -149,14 +150,14 @@ setup(
         }
     ),
     classifiers=[
-        "Development Status :: 1 - Planning",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Natural Language :: English",
+        "Typing :: Typed",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
@@ -165,7 +166,7 @@ setup(
     # package installation
     packages=find_packages(),
     zip_safe=False,
-    python_required=">=3.6",
+    python_required=">=3.7",
     include_package_data=False,
     # dependency_links = deplinks
     install_requires=list(

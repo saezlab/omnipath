@@ -1,7 +1,13 @@
+from os import environ
 from pathlib import Path
 
 from omnipath.constants import License, Organism
 from omnipath.constants._constants import PrettyEnumMixin
+
+try:
+    from typing import final
+except ImportError:
+    from typing_extensions import final  # noqa: F401
 
 
 class DEFAULT_FIELD(PrettyEnumMixin):
@@ -31,7 +37,9 @@ class DEFAULT_OPTIONS:
     cache_dir: Path = Path.home() / ".cache" / "omnipathdb"
     mem_cache = None
     progress_bar: bool = True
-    autoload: bool = True
+    autoload: bool = (
+        environ.get("OMNIPATH_AUTOLOAD", "") == ""
+    )  # this is done because for testing purposes
     convert_dtypes: bool = True
 
 
@@ -40,7 +48,7 @@ class Endpoint(PrettyEnumMixin):
 
     RESOURCES = "resources"
     ABOUT = "about"
-    INFO = "info"
+    INFO = "info"  # not used
 
 
 # TODO: refactor me
@@ -51,6 +59,8 @@ class Key(PrettyEnumMixin):  # noqa: D101
     DATASETS = "datasets"
     LICENSE = "license"
     QUERIES = "queries"
+    FIELDS = "fields"
+    PASSWORD = "password"
 
     INTERCELL_SUMMARY = "intercell_summary"
     GENERIC_CATEGORIES = "generic_categories"

@@ -31,11 +31,14 @@ def _is_valid_url(_instance, _attribute: attr.Attribute, value: str) -> NoReturn
     pr = urlparse(value)
 
     if not pr.scheme or not pr.netloc:
-        raise ValueError(f"Invalid URL `{value}`.")
+        raise ValueError(f"Invalid URL: `{value}`.")
 
 
-def _cache_converter(value: Optional[Union[str, Path]]) -> Cache:
+def _cache_converter(value: Optional[Union[str, Path, Cache]]) -> Cache:
     """Convert ``value`` to :class:`omnipath._core.cache.Cache`."""
+    if isinstance(value, Cache):
+        return value
+
     if value is None:
         return MemoryCache()
 
@@ -129,36 +132,52 @@ class Options:
         on_setattr=attr.setters.validate,
     )
 
-    def _create_config(self):
+    def _create_config(self, section: Optional[str] = None):
+        section = self.url if section is None else section
+        _is_valid_url(None, None, section)
         config = configparser.ConfigParser()
         # do not save the password
-        config[self.url] = {
+        config[section] = {
             "license": self.license.value,
             "cache_dir": str(self.cache.path),
+            "autoload": self.autoload,
+            "convert_dtypes": self.convert_dtypes,
             "num_retries": self.num_retries,
             "timeout": self.timeout,
             "chunk_size": self.chunk_size,
             "progress_bar": self.progress_bar,
-            "autoload": self.autoload,
-            "convert_dtypes": self.convert_dtypes,
         }
 
         return config
 
     @classmethod
-    def from_config(cls) -> "Options":
-        """Return the options from a configuration file."""
+    def from_config(cls, section: Optional[str] = None) -> "Options":
+        """
+        Return the options from a configuration file.
+
+        Parameters
+        ----------
+        section
+            Section of the `.ini` file from which to create the options. It corresponds to the URL of the server.
+            If `None`, use default URL.
+
+        Returns
+        -------
+        :class:`omnipath._cores.utils.Options`
+            The options.
+        """
         if not cls.config_path.is_file():
             return cls().write()
 
-        section = DEFAULT_OPTIONS.url
-
-        config = configparser.ConfigParser()
+        config = configparser.ConfigParser(default_section=DEFAULT_OPTIONS.url)
         config.read(cls.config_path)
 
+        section = DEFAULT_OPTIONS.url if section is None else section
+        _is_valid_url(None, None, section)
+        _ = config.get(section, "cache_dir")
+
         cache = config.get(section, "cache_dir", fallback=DEFAULT_OPTIONS.cache_dir)
-        if cache == "None":
-            cache = None
+        cache = None if cache == "None" else cache
 
         return cls(
             url=section,
@@ -208,20 +227,20 @@ class Options:
             )
 
         kwargs = {k: v for k, v in kwargs.items() if hasattr(options, k)}
+
         return cls(**{**options.__dict__, **kwargs})
 
-    def write(self) -> NoReturn:
+    def write(self, section: Optional[str] = None) -> NoReturn:
         """Write the current options to a configuration file."""
         self.config_path.parent.mkdir(exist_ok=True)
 
-        config = self._create_config()
         with open(self.config_path, "w") as fout:
-            config.write(fout)
+            self._create_config(section).write(fout)
 
         return self
 
     def __enter__(self):
-        return self
+        return self.from_options(self)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass

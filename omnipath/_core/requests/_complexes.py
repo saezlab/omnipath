@@ -1,14 +1,15 @@
-from typing import Any, Union, Mapping, Iterable, Optional, final
+from typing import Any, Union, Mapping, Iterable, Optional
 import logging
 
 import pandas as pd
 
 from omnipath._core.query import QueryType
-from omnipath._core.requests._request import CommonPostProcessor
+from omnipath._core.requests._request import OrganismGenesymbolsRemover
+from omnipath.constants._pkg_constants import final
 
 
 @final
-class Complexes(CommonPostProcessor):
+class Complexes(OrganismGenesymbolsRemover):
     """Request information about protein complexes from [OmniPath]_."""
 
     __string__ = frozenset(

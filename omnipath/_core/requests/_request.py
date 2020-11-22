@@ -10,15 +10,16 @@ from typing import (
     Iterable,
     Optional,
     Sequence,
-    final,
 )
+from operator import itemgetter
 from functools import partial
 import logging
 
 from pandas.api.types import is_float_dtype, is_numeric_dtype
 import pandas as pd
 
-from omnipath.constants import Organism
+from omnipath import options
+from omnipath.constants import License, Organism
 from omnipath._core.query import QueryType
 from omnipath._core.utils._docs import d
 from omnipath._core.requests._utils import (
@@ -26,7 +27,7 @@ from omnipath._core.requests._utils import (
     _inject_api_method,
     _strip_resource_label,
 )
-from omnipath.constants._pkg_constants import DEFAULT_FIELD, Key, Format
+from omnipath.constants._pkg_constants import DEFAULT_FIELD, Key, Format, final
 from omnipath._core.downloader._downloader import Downloader
 
 
@@ -56,8 +57,6 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
     _query_type: Optional[QueryType] = None
 
     def __init__(self):
-        from omnipath import options
-
         self._downloader = Downloader(options)
 
     @classmethod
@@ -83,16 +82,20 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         return {q.param: q.doc for q in cls._query_type.value}
 
     def _get(self, **kwargs) -> pd.DataFrame:
-        kwargs, callback = self._convert_params(kwargs)
-        kwargs = self._inject_fields(kwargs)
         kwargs = self._remove_params(kwargs)
+        kwargs = self._inject_fields(kwargs)
+        kwargs, callback = self._convert_params(kwargs)
         kwargs = self._validate_params(kwargs)
         kwargs = self._finalize_params(kwargs)
 
         res = self._downloader.maybe_download(
             self._query_type.endpoint, params=kwargs, callback=callback, is_final=False
         )
-        return self._post_process(self._convert_dtypes(res))
+
+        if self._downloader._options.convert_dtypes:
+            res = self._convert_dtypes(res)
+
+        return self._post_process(res)
 
     def _convert_params(
         self, params: Dict[str, Any]
@@ -105,12 +108,16 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         fmt = Format(params.get(Key.FORMAT.s, Format.TSV.s))
         if fmt not in (Format.TSV, Format.JSON):
             logging.warning(
-                f"Invalid `{Key.FORMAT.s}={fmt.s!r}`. Switching to `{Key.FORMAT.s}={Format.TSV.s!r}`"
+                f"Invalid `{Key.FORMAT.s}={fmt.s!r}`. Using `{Key.FORMAT.s}={Format.TSV.s!r}`"
             )
             fmt = Format.TSV
 
         callback = self._tsv_reader if fmt == Format.TSV else self._json_reader
+
         params[Key.FORMAT.s] = fmt.s
+        params[Key.LICENSE.s] = License(params.get(Key.LICENSE.s, License.ACADEMIC)).s
+        if self._downloader._options.password is not None:
+            params.setdefault(Key.PASSWORD.s, self._downloader._options.password)
 
         return params, callback
 
@@ -118,14 +125,16 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         try:
             _inject_params(
                 params,
-                key=self._query_type("fields").param,
+                key=self._query_type(Key.FIELDS.value).param,
                 value=getattr(DEFAULT_FIELD, self._query_type.name).value,
             )
         except AttributeError:
             # no default field for this query
             pass
         except Exception as e:
-            logging.warning(f"Unable to inject `fields` for `{self}`. Reason: `{e}`")
+            logging.warning(
+                f"Unable to inject `{Key.FIELDS.value}` for `{self}`. Reason: `{e}`"
+            )
 
         return params
 
@@ -134,7 +143,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
     ) -> Dict[str, Optional[Union[str, Sequence[str]]]]:
         """For each passed parameter, validate if it has the correct value."""
         for k, v in params.items():
-            # first get the validator, then validate
+            # first get the validator for the parameter, then validate
             params[k] = self._query_type(k)(v)
         return params
 
@@ -149,17 +158,16 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
             elif isinstance(v, (int, float)):
                 res[k] = str(v)
             elif isinstance(v, Iterable):
-                res[k] = ",".join(v)
+                res[k] = ",".join(sorted(v))
             elif isinstance(v, Enum):
                 res[k] = str(v.value)
             elif v is not None:
                 logging.warning(f"Unable to process parameter `{k}={v}`. Ignoring")
 
-        return res
+        return dict(sorted(res.items(), key=itemgetter(0)))
 
     def _convert_dtypes(self, res: pd.DataFrame, **_) -> pd.DataFrame:
         """Automatically convert dtypes for this type of query."""
-        from omnipath import options
 
         def to_logical(col: pd.Series) -> pd.Series:
             if is_numeric_dtype(col):
@@ -190,10 +198,9 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
                 f"Expected the result to be of type `pandas.DataFrame`, found `{type(res).__name__}`."
             )
 
-        if options.convert_dtypes:
-            handle_logical(res, self.__logical__)
-            handle_categorical(res, self.__categorical__)
-            handle_string(res, self.__string__)
+        handle_logical(res, self.__logical__)
+        handle_categorical(res, self.__categorical__)
+        handle_string(res, self.__string__)
 
         return res
 
@@ -215,17 +222,28 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
             sorted(
                 res
                 for res, params in self._downloader.resources.items()
-                if self._query_type.name.lower() in params[Key.QUERIES.s]
+                if self._query_type.endpoint in params.get(Key.QUERIES.s, {})
                 and self._resource_filter(
-                    params[Key.QUERIES.s][self._query_type.name.lower()], **kwargs
+                    params[Key.QUERIES.s][self._query_type.endpoint], **kwargs
                 )
             )
         )
 
-    # TODO: doc
-    @abstractmethod
     def _remove_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        pass
+        """
+        Remove parameters from this query.
+
+        Parameters
+        ----------
+        params
+            The parameters to filter.
+
+        Returns
+        -------
+        :class:`dict`
+            The filtered parameters.
+        """
+        return params
 
     @abstractmethod
     def _post_process(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -279,22 +297,6 @@ class CommonPostProcessor(OmnipathRequestABC, ABC):
     :class:`omnipath.interactions.InteractionRequest` and :class:`omnipath.requests.Enzsub`.
     """
 
-    def _remove_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        params.pop(Key.ORGANISM.s, None)
-        params.pop(Key.GENESYMBOLS.s, None)
-
-        return params
-
-    @classmethod
-    @d.dedent
-    def params(cls) -> Dict[str, Any]:
-        """%(query_params)s"""
-        params = super().params()
-        params.pop(Key.ORGANISM.s, None)
-        params.pop(Key.GENESYMBOLS.s, None)
-
-        return params
-
     def _post_process(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Add number of resources and references for each row in the resulting ``df``.
@@ -332,12 +334,32 @@ class CommonPostProcessor(OmnipathRequestABC, ABC):
         return df
 
 
+class OrganismGenesymbolsRemover(CommonPostProcessor, ABC):
+    """Class that removes organism and genesymbols keys from the query."""
+
+    def _remove_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        params.pop(Key.ORGANISM.s, None)
+        params.pop(Key.GENESYMBOLS.s, None)
+
+        return params
+
+    @classmethod
+    @d.dedent
+    def params(cls) -> Dict[str, Any]:
+        """%(query_params)s"""
+        params = super().params()
+        params.pop(Key.ORGANISM.s, None)
+        params.pop(Key.GENESYMBOLS.s, None)
+
+        return params
+
+
 @final
-class Enzsub(CommonPostProcessor):
+class Enzsub(OrganismGenesymbolsRemover):
     """
     Request enzyme-substrate relationships from [OmniPath]_.
 
-    Imports the enzyme-substrate (more exactly, enzyme-PTM) relationship `database <https://omnipathdb.org/enzsub>`__.
+    Imports the enzyme-substrate (more exactly, enzyme-PTM) relationships `database <https://omnipathdb.org/enzsub>`__.
     """
 
     __string__ = frozenset({"enzyme", "substrate"})

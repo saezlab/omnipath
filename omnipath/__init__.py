@@ -21,6 +21,6 @@ __full_version__ = parse(version(__name__))
 __full_version__ = (
     f"{__version__}+{__full_version__.local}" if __full_version__.local else __version__
 )
-__server_version__ = _get_server_version()
+__server_version__ = _get_server_version(options)
 
 del parse, version, _get_server_version
