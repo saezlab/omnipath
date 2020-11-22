@@ -1,9 +1,9 @@
 Installation
 ============
-Omnipath requires Python version >= 3.6 to run.
+Omnipath requires Python version >= 3.7 to run.
 
-PyPI (soon)
-~~~~~~~~~~~
+PyPI
+~~~~
 Omnipath is also available on PyPI::
 
     pip install omnipath
