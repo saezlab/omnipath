@@ -37,7 +37,7 @@ setup(
     maintainer=__maintainer__,
     maintainer_email=__email__,
     # description
-    description=Path("README.rst").read_text("utf-8").splitlines()[3],
+    description=Path("README.rst").read_text("utf-8").splitlines()[2],
     long_description=Path("README.rst").read_text("utf-8"),
     description_content_type="text/x-rst; charset=UTF-8",
     long_description_content_type="text/x-rst; charset=UTF-8",
