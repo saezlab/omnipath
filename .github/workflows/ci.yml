@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      max-parallel: 4
+      matrix:
+        python: [3.7, 3.8]  # , 3.9]
+        os: [ubuntu-latest, macos-latest]
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON: ${{ matrix.python }}
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+
+    - name: Get pip cache dir
+      id: pip-cache
+      run: |
+        echo "::set-output name=dir::$(pip cache dir)"
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.pip-cache.outputs.dir }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install tox tox-gh-actions codecov
+
+    - name: Linting
+      run: |
+        tox -e lint
+    - name: Testing
+      run: |
+        tox
+      env:
+        PLATFORM: ${{ matrix.platform }}
+
+    - name: Upload coverage to Codecov
+      if: success()
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        CODECOV_NAME: ${{ matrix.python }}-${{ matrix.os }}
+      run: |
+        codecov --no-color --required --flags unittests
+
+    - name: Install pypa/build
+      run: pip install build
+    - name: Build a binary wheel and a source tarball
+      run: python -m build --sdist --wheel --outdir dist/
+
+    - name: Publish package on PyPI
+      if: matrix.os == 'ubuntu-latest' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_PASSWORD }}
+        skip_existing: true
+        verbose: true
