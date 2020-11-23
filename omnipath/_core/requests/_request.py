@@ -1,3 +1,4 @@
+from io import BytesIO
 from abc import ABC, ABCMeta, abstractmethod
 from enum import Enum
 from typing import (
@@ -12,7 +13,7 @@ from typing import (
     Sequence,
 )
 from operator import itemgetter
-from functools import partial
+from functools import wraps, partial
 import logging
 
 from pandas.api.types import is_float_dtype, is_numeric_dtype
@@ -29,6 +30,18 @@ from omnipath._core.requests._utils import (
 )
 from omnipath.constants._pkg_constants import DEFAULT_FIELD, Key, Format, final
 from omnipath._core.downloader._downloader import Downloader
+
+
+def _error_handler(callback: Callable[[BytesIO], Any]) -> Callable:
+    @wraps(callback)
+    def wrapper(cls, *args, **kwargs) -> pd.DataFrame:
+        res: pd.DataFrame = callback(*args, **kwargs)
+        if len(res.columns) == 1 and res.columns == ["Something is not entirely good:"]:
+            raise RuntimeError(" ".join(res.iloc[:, 0]))
+
+        return res
+
+    return wrapper
 
 
 class OmnipathRequestMeta(ABCMeta):  # noqa: D101
@@ -52,8 +65,10 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
     __logical__ = frozenset()
     __categorical__ = frozenset()
 
-    _json_reader = partial(pd.read_json, typ="frame")
-    _tsv_reader = partial(pd.read_csv, sep="\t", header=0, squeeze=False)
+    _json_reader = _error_handler(partial(pd.read_json, typ="frame"))
+    _tsv_reader = _error_handler(
+        partial(pd.read_csv, sep="\t", header=0, squeeze=False)
+    )
     _query_type: Optional[QueryType] = None
 
     def __init__(self):
@@ -100,22 +115,37 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
     def _convert_params(
         self, params: Dict[str, Any]
     ) -> Tuple[Dict[str, Any], Callable]:
-        if Key.ORGANISM.s in params:
-            # convert organism to its code
-            params[Key.ORGANISM.s] = Organism(params[Key.ORGANISM.s]).code
+        organism = params.pop("organism", params.pop("organisms", None))
+        if organism is not None:
+            organism = Organism(organism)
+            try:
+                params[self._query_type("organism").param] = organism.code
+            except ValueError:
+                pass
 
         # check the requested format
-        fmt = Format(params.get(Key.FORMAT.s, Format.TSV.s))
+        fmt = params.pop("format", params.pop("formats", Format.TSV.s))
+        fmt = Format(Format.TSV if fmt is None else fmt)
         if fmt not in (Format.TSV, Format.JSON):
             logging.warning(
                 f"Invalid `{Key.FORMAT.s}={fmt.s!r}`. Using `{Key.FORMAT.s}={Format.TSV.s!r}`"
             )
             fmt = Format.TSV
-
         callback = self._tsv_reader if fmt == Format.TSV else self._json_reader
+        try:
+            params[self._query_type("format").param] = fmt.s
+        except ValueError:
+            pass
 
-        params[Key.FORMAT.s] = fmt.s
-        params[Key.LICENSE.s] = License(params.get(Key.LICENSE.s, License.ACADEMIC)).s
+        # check the license
+        license = params.pop("license", params.pop("licenses", License.ACADEMIC.s))
+        if license is not None:
+            license = License(license)
+            try:
+                params[self._query_type("license").param] = license
+            except ValueError:
+                pass
+
         if self._downloader._options.password is not None:
             params.setdefault(Key.PASSWORD.s, self._downloader._options.password)
 
@@ -142,13 +172,17 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         self, params: Dict[str, Any]
     ) -> Dict[str, Optional[Union[str, Sequence[str]]]]:
         """For each passed parameter, validate if it has the correct value."""
+        res = {}
         for k, v in params.items():
             # first get the validator for the parameter, then validate
-            params[k] = self._query_type(k)(v)
-        return params
+            if isinstance(v, Enum):
+                v = v.value
+            res[self._query_type(k).param] = self._query_type(k)(v)
+        return res
 
     def _finalize_params(self, params: Dict[str, Any]) -> Dict[str, str]:
         """Convert all the parameters to strings."""
+        # this is largely redundant
         res = {}
         for k, v in params.items():
             if isinstance(v, str):

@@ -3,6 +3,12 @@
 Python client for the OmniPath web service
 ==========================================
 
+Installation
+------------
+You can install ``omnipath`` by running::
+
+    pip install omnipath
+
 The OmniPath database
 ---------------------
 
@@ -23,11 +29,6 @@ The data is available through a web service hosted on this `website`_.
 This repository hosts a Python package for querying this web service and
 downloading data into data frames or dictionaries.
 
-Installation
-~~~~~~~~~~~~
-You can install ``omnipath`` by running::
-
-    pip install git+https://github.com/saezlab/omnipath
 
 The Python package for OmniPath is pypath, isn't it?
 ----------------------------------------------------
@@ -75,6 +76,6 @@ certain (not all) annotations of the proteins.
 .. _website : https://omnipathdb.org/
 .. _Cytoscape plug-in : https://apps.cytoscape.org/apps/omnipath
 .. _pypath : https://github.com/saezlab/pypath
-.. _reprint : https://www.biorxiv.org/content/10.1101/2020.08.03.221242v2
+.. _preprint : https://www.biorxiv.org/content/10.1101/2020.08.03.221242v2
 .. _paper from 2016 : https://www.nature.com/articles/nmeth.4077
 .. _supplementary material : https://static-content.springer.com/esm/art%3A10.1038%2Fnmeth.4077/MediaObjects/41592_2016_BFnmeth4077_MOESM495_ESM.pdf

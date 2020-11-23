@@ -77,6 +77,9 @@ class License(PrettyEnumMixin):
 
     ACADEMIC = "academic"  # doc: Academic license.
     COMMERCIAL = "commercial"  # doc: Commercial license.
+    NON_PROFIT = "non_profit"  # doc: Non-profit license.
+    FOR_PROFIT = "for_profit"  # doc: For-profit license.
+    IGNORE = "ignore"  # doc: Ignore the license type.
 
 
 @unique

@@ -81,20 +81,20 @@ class TestInteractions:
         ):
             AllInteractions.get(**{Key.ORGANISM.s: "foo"})
 
-    @pytest.mark.parametrize("organism", list(Organism))
+    @pytest.mark.parametrize("organisms", list(Organism))
     def test_valid_organism(
-        self, cache_backup, organism, requests_mock, interaction_resources
+        self, cache_backup, organisms, requests_mock, interaction_resources
     ):
         url = urljoin(options.url, AllInteractions._query_type.endpoint)
         requests_mock.register_uri(
             "GET",
             f"{url}?fields=curation_effort%2Creferences%2Csources%2Ctype&"
-            f"format=tsv&license=academic&organism={organism.code}",
+            f"format=tsv&license=academic&organisms={organisms.code}",
             content=interaction_resources,
         )
 
-        AllInteractions.get(organism=organism, format="tsv")
-        AllInteractions.get(organism=organism.value, format="tsv")
+        AllInteractions.get(organism=organisms, format="tsv")
+        AllInteractions.get(organisms=organisms.value, format="tsv")
         assert requests_mock.called_once
 
     def test_dorothea_params(self):
