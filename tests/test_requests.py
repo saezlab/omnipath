@@ -91,7 +91,7 @@ class TestEnzsub:
         url = urljoin(options.url, Enzsub._query_type.endpoint)
         requests_mock.register_uri(
             "GET",
-            f"{url}?fields=curation_effort%2Creferences%2Csources&format=tsv&license=academic",
+            f"{url}?fields=curation_effort%2Creferences%2Csources&format=tsv",
             content=tsv_data,
         )
         _ = Enzsub.get(organism="foobarbaz")
@@ -104,7 +104,7 @@ class TestEnzsub:
         url = urljoin(options.url, Enzsub._query_type.endpoint)
         requests_mock.register_uri(
             "GET",
-            f"{url}?fields=curation_effort%2Creferences%2Csources&format=tsv&license=academic",
+            f"{url}?fields=curation_effort%2Creferences%2Csources&format=tsv",
             content=tsv_data,
         )
         _ = Enzsub.get(genesymbol=True)
@@ -115,7 +115,7 @@ class TestEnzsub:
         url = urljoin(options.url, Enzsub._query_type.endpoint)
         requests_mock.register_uri(
             "GET",
-            f"{url}?fields=Alpha%2Cbeta%2Ccuration_effort%2Creferences%2Csources&format=tsv&license=academic",
+            f"{url}?fields=Alpha%2Cbeta%2Ccuration_effort%2Creferences%2Csources&format=tsv",
             content=tsv_data,
         )
         _ = Enzsub.get(fields=("beta", "Alpha", "Alpha"))
@@ -128,7 +128,7 @@ class TestEnzsub:
 
         requests_mock.register_uri(
             "GET",
-            f"{url}?fields=curation_effort%2Creferences%2Csources&format=tsv&license=academic",
+            f"{url}?fields=curation_effort%2Creferences%2Csources&format=tsv",
             content=tsv_data,
         )
 
@@ -207,7 +207,7 @@ class TestIntercell:
         url = urljoin(options.url, Intercell._query_type.endpoint)
         requests_mock.register_uri(
             "GET",
-            f"{url}?format=tsv&license=academic&password=foobar",
+            f"{url}?format=tsv&password=foobar",
             content=intercell_data,
         )
 
@@ -225,7 +225,7 @@ class TestIntercell:
         url = urljoin(options.url, Intercell._query_type.endpoint)
         requests_mock.register_uri(
             "GET",
-            f"{url}?format=tsv&license=academic&password=bazquux",
+            f"{url}?format=tsv&password=bazquux",
             content=intercell_data,
         )
 

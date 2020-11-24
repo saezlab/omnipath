@@ -89,7 +89,7 @@ class TestInteractions:
         requests_mock.register_uri(
             "GET",
             f"{url}?fields=curation_effort%2Creferences%2Csources%2Ctype&"
-            f"format=tsv&license=academic&organisms={organisms.code}",
+            f"format=tsv&organisms={organisms.code}",
             content=interaction_resources,
         )
 
@@ -197,19 +197,19 @@ class TestUtils:
         requests_mock.register_uri(
             "GET",
             f"{interactions_url}?datasets=dorothea&dorothea_levels=A&fields=curation_effort%2C"
-            f"references%2Csources&format=tsv&license=academic",
+            f"references%2Csources&format=tsv",
             content=interactions_data,
         )
         # transmitter
         requests_mock.register_uri(
             "GET",
-            f"{intercell_url}?categories=ligand&causality=trans&format=tsv&license=academic&scope=generic",
+            f"{intercell_url}?categories=ligand&causality=trans&format=tsv&scope=generic",
             content=transmitters_data,
         )
         # receiver
         requests_mock.register_uri(
             "GET",
-            f"{intercell_url}?categories=receptor&causality=rec&format=tsv&license=academic&scope=generic",
+            f"{intercell_url}?categories=receptor&causality=rec&format=tsv&&scope=generic",
             content=receivers_data,
         )
 
