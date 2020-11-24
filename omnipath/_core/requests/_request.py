@@ -124,7 +124,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
                 pass
 
         # check the requested format
-        fmt = params.pop("format", params.pop("formats", Format.TSV.s))
+        fmt = params.pop("format", params.pop("formats", None))
         fmt = Format(Format.TSV if fmt is None else fmt)
         if fmt not in (Format.TSV, Format.JSON):
             logging.warning(
@@ -138,7 +138,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
             pass
 
         # check the license
-        license = params.pop("license", params.pop("licenses", License.ACADEMIC.s))
+        license = params.pop("license", params.pop("licenses", None))
         if license is not None:
             license = License(license)
             try:
