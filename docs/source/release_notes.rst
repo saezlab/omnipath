@@ -6,6 +6,12 @@ Release Notes
 Version 1.0
 -----------
 
+1.0.2 :small:`2020-11-29`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+- Fix small bug when converting boolean values
+- Fix typos
+- Add option to create interaction graphs
+
 1.0.1 :small:`2020-11-29`
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 - Fix bug of not correctly passing datasets in interactions
