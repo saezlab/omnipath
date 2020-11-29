@@ -63,7 +63,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest' && matrix.python == '3.8'
       run: |
         Rscript --version
-        sudo Rscript --vanilla -e "if (!(requireNamespace('BiocManager', quietly=TRUE))) { install.packages('BiocManager', repos='https://cloud.r-project.org/') }; BiocManager::install(c('curl', 'OmnipathR'))"
+        sudo Rscript --vanilla -e "if (!(requireNamespace('BiocManager', quietly=TRUE))) { install.packages(c('BiocManager', 'curl'), repos='https://cloud.r-project.org/') }; BiocManager::install('OmnipathR')"
         Rscript --vanilla -e "packageVersion('OmnipathR')"
 
     - name: Linting
