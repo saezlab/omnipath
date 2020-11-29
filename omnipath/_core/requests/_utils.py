@@ -19,7 +19,7 @@ def _get_helper(cls: type, **kwargs) -> pd.DataFrame:
     Perform a request to the [OmniPath]_ web service.
 
     Parameters
-    -----------
+    ----------
     kwargs
         Additional query parameters.
 

@@ -26,7 +26,7 @@ class TestEnzsub:
         params = Enzsub.params()
 
         assert Key.ORGANISM.value not in params
-        assert Key.GENESYMBOLS.value not in params
+        assert Key.GENESYMBOLS.value in params
 
         for k, valid in params.items():
             if isinstance(valid, Iterable):
@@ -85,18 +85,20 @@ class TestEnzsub:
         assert set(Enzsub._docs().keys()) == {e.param for e in EnzsubQuery}
         assert all(d is None for d in Enzsub._docs().values())
 
-    def test_invalid_organism_does_not_matter(
-        self, cache_backup, requests_mock, tsv_data: bytes
-    ):
+    def test_invalid_organism(self, cache_backup, requests_mock, tsv_data: bytes):
         url = urljoin(options.url, Enzsub._query_type.endpoint)
         requests_mock.register_uri(
             "GET",
             f"{url}?fields=curation_effort%2Creferences%2Csources&format=tsv",
             content=tsv_data,
         )
-        _ = Enzsub.get(organism="foobarbaz")
+        with pytest.raises(
+            ValueError,
+            match=r"Invalid value `foobarbaz` for `Organism`. Valid options are:",
+        ):
+            Enzsub.get(organism="foobarbaz")
 
-        assert requests_mock.called_once
+        assert not requests_mock.called_once
 
     def test_genesymbols_dont_matter(
         self, cache_backup, requests_mock, tsv_data: bytes

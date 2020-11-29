@@ -78,6 +78,11 @@ class InteractionRequest(CommonPostProcessor, ABC):
 
         self._datasets = datasets
 
+    def _modify_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        params = super()._modify_params(params)
+        params[self._query_type("datasets").param] = self._datasets
+        return params
+
     @classmethod
     @abstractmethod
     def _filter_params(cls, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -305,23 +310,28 @@ class OmniPath(InteractionRequest):
 
 
 @final
+@d.get_sections(base="all_ints", sections=["Parameters"])
 @d.dedent
 class AllInteractions(InteractionRequest):
     """
     Request all [OmniPath]_ interaction datasets.
 
+    The available interaction datasets are :class:`omnipath.constants.InteractionDataset`.
+
     Parameters
     ----------
+    include
+        Interactions datasets to include from the [OmniPath]_ database. If `None`, include everything.
     exclude
-        Interaction datasets to exclude from the [OmniPath]_ database. If `None`, don't exclude any.
-        See :meth:`get` or :meth:`params` for available values.
+        Interaction datasets to exclude from the [OmniPath]_ database. If `None`, don't exclude anything.
     """
 
     def __init__(
         self,
-        exclude: Optional[Sequence[InteractionDataset]] = None,
+        include: Optional[Datasets_t] = None,
+        exclude: Optional[Datasets_t] = None,
     ):
-        super().__init__(None, exclude=exclude)
+        super().__init__(include, exclude=exclude)
 
     def _inject_fields(self, params: Dict[str, Any]) -> Dict[str, Any]:
         params = super()._inject_fields(params)
@@ -334,29 +344,32 @@ class AllInteractions(InteractionRequest):
         return super()._filter_params(params)
 
     @classmethod
-    @d.dedent
     @final
+    @d.dedent
     def get(
-        cls, exclude: Optional[Sequence[Datasets_t]] = None, **kwargs
+        cls,
+        include: Optional[Datasets_t] = None,
+        exclude: Optional[Datasets_t] = None,
+        **kwargs,
     ) -> pd.DataFrame:
         """
         %(get.full_desc)s
 
+        The available interaction datasets are :class:`omnipath.constants.InteractionDataset`.
+
         Parameters
         ----------
+        include
+            Interactions datasets to include from the [OmniPath]_ database. If `None`, include everything.
         exclude
-            Interaction datasets to exclude. Can be one or more of the following:
-
-                %(interaction_datasets)s
-
-        kwargs
-            Additional query parameters.
+            Interaction datasets to exclude from the [OmniPath]_ database. If `None`, don't exclude anything.
+        %(get.parameters)s
 
         Returns
         -------
         %(get.returns)s
         """
-        return cls(exclude=exclude)._get(**kwargs)
+        return cls(include, exclude=exclude)._get(**kwargs)
 
 
 __all__ = [

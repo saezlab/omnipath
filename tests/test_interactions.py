@@ -1,4 +1,4 @@
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote_plus
 import json
 
 import pytest
@@ -86,9 +86,10 @@ class TestInteractions:
         self, cache_backup, organisms, requests_mock, interaction_resources
     ):
         url = urljoin(options.url, AllInteractions._query_type.endpoint)
+        datasets = quote_plus(",".join(sorted(d.value for d in InteractionDataset)))
         requests_mock.register_uri(
             "GET",
-            f"{url}?fields=curation_effort%2Creferences%2Csources%2Ctype&"
+            f"{url}?datasets={datasets}&fields=curation_effort%2Creferences%2Csources%2Ctype&"
             f"format=tsv&organisms={organisms.code}",
             content=interaction_resources,
         )
@@ -196,8 +197,8 @@ class TestUtils:
         # interactions
         requests_mock.register_uri(
             "GET",
-            f"{interactions_url}?datasets=dorothea&dorothea_levels=A&fields=curation_effort%2C"
-            f"references%2Csources&format=tsv",
+            f"{interactions_url}?datasets=omnipath&dorothea_levels=A&fields=curation_effort%2C"
+            f"references%2Csources%2Ctype&format=tsv",
             content=interactions_data,
         )
         # transmitter
@@ -209,18 +210,19 @@ class TestUtils:
         # receiver
         requests_mock.register_uri(
             "GET",
-            f"{intercell_url}?categories=receptor&causality=rec&format=tsv&&scope=generic",
+            f"{intercell_url}?categories=receptor&causality=rec&format=tsv&scope=generic",
             content=receivers_data,
         )
 
         res = import_intercell_network(
+            include=InteractionDataset.OMNIPATH,
             transmitter_params={"categories": "ligand"},
-            interactions_params={"datasets": "dorothea", "dorothea_levels": "A"},
+            interactions_params={"dorothea_levels": "A"},
             receiver_params={"categories": "receptor"},
         )
 
         assert isinstance(res, pd.DataFrame)
-        assert res.shape == (31, 46)
+        np.testing.assert_array_equal(res.shape, import_intercell_result.shape)
 
         np.testing.assert_array_equal(res.index, import_intercell_result.index)
         np.testing.assert_array_equal(res.columns, import_intercell_result.columns)

@@ -1,5 +1,5 @@
 from abc import ABCMeta
-from enum import EnumMeta
+from enum import Enum, EnumMeta
 from typing import (
     Any,
     Set,
@@ -45,9 +45,9 @@ def _to_string_set(item: Union[Any, Sequence[Any]]) -> Set[str]:
     :class:`set`
         Set of `str`.
     """
-    if isinstance(item, str) or not isinstance(item, Iterable):
+    if isinstance(item, (str, Enum)) or not isinstance(item, Iterable):
         item = (item,)
-    return set({str(i) for i in item})
+    return set({str(i.value if isinstance(i, Enum) else i) for i in item})
 
 
 class ServerValidatorMeta(EnumMeta, ABCMeta):  # noqa: D101
@@ -111,6 +111,8 @@ class ServerValidatorMeta(EnumMeta, ABCMeta):  # noqa: D101
                 return None
             elif isinstance(needle, bool):
                 needle = int(needle)
+            elif isinstance(needle, Enum):
+                needle = needle.value
 
             needle = _to_string_set(needle)
             if self.haystack is None:
@@ -196,9 +198,12 @@ class ServerValidatorMeta(EnumMeta, ABCMeta):  # noqa: D101
         if use_default:
             if endpoint is not None:
                 logging.debug(
-                    f"Using predefined class: `{clsname}`." + ""
-                    if options.autoload
-                    else " Consider specifying `omnipath.options.autoload = True`"
+                    f"Using predefined class: `{clsname}`."
+                    + (
+                        ""
+                        if options.autoload
+                        else " Consider specifying `omnipath.options.autoload = True`"
+                    )
                 )
 
             _ = cls._remove_old_members(attributedict)

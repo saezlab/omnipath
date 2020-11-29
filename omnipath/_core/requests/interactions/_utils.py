@@ -3,9 +3,11 @@ from typing import Any, Dict, Mapping, Optional
 import pandas as pd
 
 from omnipath.constants._constants import InteractionDataset
-from omnipath.constants._pkg_constants import Key
 from omnipath._core.requests._intercell import Intercell
-from omnipath._core.requests.interactions._interactions import OmniPath
+from omnipath._core.requests.interactions._interactions import (
+    Datasets_t,
+    AllInteractions,
+)
 
 
 def _to_dict(mapping: Optional[Mapping[Any, Any]]) -> Dict[Any, Any]:
@@ -40,6 +42,12 @@ def _swap_undirected(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def import_intercell_network(
+    include: Datasets_t = (
+        InteractionDataset.OMNIPATH,
+        InteractionDataset.PATHWAY_EXTRA,
+        InteractionDataset.KINASE_EXTRA,
+        InteractionDataset.LIGREC_EXTRA,
+    ),
     interactions_params: Optional[Mapping[str, Any]] = None,
     transmitter_params: Optional[Mapping[str, Any]] = None,
     receiver_params: Optional[Mapping[str, Any]] = None,
@@ -61,14 +69,10 @@ def import_intercell_network(
 
     Parameters
     ----------
+    include
+        Interaction datasets to include for :meth:`omnipath.interactions.AllInteractions.get`.
     interactions_params
-        Parameters for the :meth:`omnipath.interactions.AllInteractions.get` with the following datasets:
-
-            - :attr:`omnipath.constants.InteractionDataset.OMNIPATH`
-            - :attr:`omnipath.constants.InteractionDataset.PATHWAY_EXTRA`
-            - :attr:`omnipath.constants.InteractionDataset.KINASE_EXTRA`
-            - :attr:`omnipath.constants.InteractionDataset.LIGREC_EXTRA`
-
+        Parameters for the :meth:`omnipath.interactions.AllInteractions.get`.
     transmitter_params
         Parameters defining the transmitter side of intercellular connections.
         See :meth:`omnipath.interactions.AllInteractions.params` for available values.
@@ -86,40 +90,32 @@ def import_intercell_network(
     transmitter_params = _to_dict(transmitter_params)
     receiver_params = _to_dict(receiver_params)
 
-    interactions_params.setdefault(
-        Key.DATASETS.s,
-        [
-            InteractionDataset.OMNIPATH.s,
-            InteractionDataset.PATHWAY_EXTRA.s,
-            InteractionDataset.KINASE_EXTRA.s,
-            InteractionDataset.LIGREC_EXTRA.s,
-        ],
-    )
     # TODO: this should be refactored as: QueryType.INTERCELL("scope").param, etc. (also in many other places)
     transmitter_params.setdefault("causality", "trans")
     transmitter_params.setdefault("scope", "generic")
     receiver_params.setdefault("causality", "rec")
     receiver_params.setdefault("scope", "generic")
 
-    interactions = OmniPath.get(**interactions_params)
+    interactions = AllInteractions.get(include=include, **interactions_params)
     interactions = _swap_undirected(interactions)
 
     transmitters = Intercell.get(**transmitter_params)
     receivers = Intercell.get(**receiver_params)
 
     # fmt: off
-    transmitters = transmitters[~transmitters["parent"].isin(["intracellular_intercellular_related", "intracellular"])]
+    intracell = ['intracellular_intercellular_related', 'intracellular']
+    transmitters = transmitters.loc[~transmitters["parent"].isin(intracell), :]
     transmitters.rename(columns={"source": "category_source"}, inplace=True)
     # this makes it 3x as fast during groupby, since all of these are categories
     # it's mostly because groupby needs observed=True + using string object (numpy) vs "string"
     transmitters[["category", "parent", "database"]] = transmitters[["category", "parent", "database"]].astype(str)
 
-    receivers = receivers[~receivers["parent"].isin(["intracellular_intercellular_related", "intracellular"])]
+    receivers = receivers.loc[~receivers["parent"].isin(intracell), :]
     receivers.rename(columns={"source": "category_source"}, inplace=True)
     receivers[["category", "parent", "database"]] = receivers[["category", "parent", "database"]].astype(str)
 
     res = pd.merge(interactions, transmitters, left_on="source", right_on="uniprot", how="inner")
-    gb = res.groupby(["category", "parent", "source", "target"], as_index=False,)
+    gb = res.groupby(["category", "parent", "source", "target"], as_index=False)
     # fmt: on
 
     res = gb.nth(0).copy()  # much faster than 1st
@@ -153,11 +149,11 @@ def import_intercell_network(
     )
 
     # retype back as categories
-    for suffix in ["_intercell_source", "_intercell_target"]:
-        for col in ["category", "parent"]:
+    for col in ["category", "parent"]:
+        for suffix in ["_intercell_source", "_intercell_target"]:
             res[f"{col}{suffix}"] = res[f"{col}{suffix}"].astype("category")
 
-    return res.reset_index()
+    return res.reset_index(drop=True)
 
 
 def get_signed_ptms(

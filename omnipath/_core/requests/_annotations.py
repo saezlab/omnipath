@@ -17,7 +17,7 @@ class Annotations(OmnipathRequestABC):
 
     _query_type = QueryType.ANNOTATIONS
 
-    def _remove_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _modify_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
         params.pop(Key.ORGANISM.value, None)
 
         return params

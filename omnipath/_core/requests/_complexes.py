@@ -86,7 +86,7 @@ class Complexes(OrganismGenesymbolsRemover):
             complexes[col]
             .str.split("_")
             .apply(lambda needles: reduction(n in genes for n in needles))
-        ]
+        ].reset_index(drop=True)
 
 
 __all__ = [Complexes]

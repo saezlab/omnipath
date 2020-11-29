@@ -97,7 +97,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         return {q.param: q.doc for q in cls._query_type.value}
 
     def _get(self, **kwargs) -> pd.DataFrame:
-        kwargs = self._remove_params(kwargs)
+        kwargs = self._modify_params(kwargs)
         kwargs = self._inject_fields(kwargs)
         kwargs, callback = self._convert_params(kwargs)
         kwargs = self._validate_params(kwargs)
@@ -175,8 +175,6 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         res = {}
         for k, v in params.items():
             # first get the validator for the parameter, then validate
-            if isinstance(v, Enum):
-                v = v.value
             res[self._query_type(k).param] = self._query_type(k)(v)
         return res
 
@@ -224,8 +222,10 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
                 df[cols] = df[cols].astype("category")
 
         def handle_string(df: pd.DataFrame, columns: frozenset) -> None:
-            cols = list(frozenset(df.columns) & columns)
-            df[cols] = df[cols].astype(str)
+            for col in frozenset(df.columns) & columns:
+                mask = pd.isnull(df[col])
+                df[col] = df[col].astype(str)
+                df.loc[mask, col] = None
 
         if not isinstance(res, pd.DataFrame):
             raise TypeError(
@@ -263,7 +263,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
             )
         )
 
-    def _remove_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _modify_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """
         Remove parameters from this query.
 
@@ -371,7 +371,7 @@ class CommonPostProcessor(OmnipathRequestABC, ABC):
 class OrganismGenesymbolsRemover(CommonPostProcessor, ABC):
     """Class that removes organism and genesymbols keys from the query."""
 
-    def _remove_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _modify_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
         params.pop(Key.ORGANISM.s, None)
         params.pop(Key.GENESYMBOLS.s, None)
 
@@ -389,7 +389,7 @@ class OrganismGenesymbolsRemover(CommonPostProcessor, ABC):
 
 
 @final
-class Enzsub(OrganismGenesymbolsRemover):
+class Enzsub(CommonPostProcessor):
     """
     Request enzyme-substrate relationships from [OmniPath]_.
 
