@@ -8,12 +8,9 @@ import pandas as pd
 
 from omnipath import options
 from omnipath.constants import Organism, InteractionDataset
-from omnipath._core.requests import Intercell
+from omnipath._core.requests import Intercell, SignedPTMs
 from omnipath.constants._pkg_constants import Key, Endpoint
-from omnipath._core.requests.interactions._utils import (
-    get_signed_ptms,
-    import_intercell_network,
-)
+from omnipath._core.requests.interactions._utils import import_intercell_network
 from omnipath._core.requests.interactions._interactions import (
     TFmiRNA,
     Dorothea,
@@ -145,11 +142,11 @@ class TestInteractions:
 class TestUtils:
     def test_get_signed_ptms_wrong_ptms_type(self):
         with pytest.raises(TypeError, match=r"Expected `ptms`"):
-            get_signed_ptms(42, pd.DataFrame())
+            SignedPTMs.get(42, pd.DataFrame())
 
     def test_get_signed_ptms_wrong_interactions_type(self):
         with pytest.raises(TypeError, match=r"Expected `interactions`"):
-            get_signed_ptms(pd.DataFrame(), 42)
+            SignedPTMs.get(pd.DataFrame(), 42)
 
     def test_get_signed_ptms(self):
         ptms = pd.DataFrame(
@@ -172,7 +169,7 @@ class TestUtils:
             how="left",
         )
 
-        res = get_signed_ptms(ptms, interactions)
+        res = SignedPTMs.get(ptms, interactions)
 
         np.testing.assert_array_equal(res.index, expected.index)
         np.testing.assert_array_equal(res.columns, expected.columns)
