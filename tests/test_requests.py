@@ -12,6 +12,7 @@ import pandas as pd
 
 from omnipath import options
 from omnipath.requests import Enzsub, Complexes, Intercell, Annotations
+from omnipath._core.requests import SignedPTMs
 from omnipath._core.query._query import EnzsubQuery
 from omnipath._core.requests._utils import _split_unique_join, _strip_resource_label
 from omnipath.constants._pkg_constants import Key, Endpoint
@@ -340,6 +341,112 @@ class TestAnnotations:
         np.testing.assert_array_equal(res.index, df.index)
         np.testing.assert_array_equal(res.columns, df.columns)
         np.testing.assert_array_equal(res.values, df.values)
+
+
+class TestSignedPTMs:
+    def test_get_signed_ptms_wrong_ptms_type(self):
+        with pytest.raises(TypeError, match=r"Expected `ptms`"):
+            SignedPTMs.get(42, pd.DataFrame())
+
+    def test_get_signed_ptms_wrong_interactions_type(self):
+        with pytest.raises(TypeError, match=r"Expected `interactions`"):
+            SignedPTMs.get(pd.DataFrame(), 42)
+
+    def test_get_signed_ptms(self):
+        ptms = pd.DataFrame(
+            {"enzyme": ["alpha", "beta", "gamma"], "substrate": [0, 1, 0], "foo": 42}
+        )
+        interactions = pd.DataFrame(
+            {
+                "source": ["gamma", "beta", "delta"],
+                "target": [0, 0, 1],
+                "is_stimulation": True,
+                "is_inhibition": False,
+                "bar": 1337,
+            }
+        )
+        expected = pd.merge(
+            ptms,
+            interactions[["source", "target", "is_stimulation", "is_inhibition"]],
+            left_on=["enzyme", "substrate"],
+            right_on=["source", "target"],
+            how="left",
+        )
+
+        res = SignedPTMs.get(ptms, interactions)
+
+        np.testing.assert_array_equal(res.index, expected.index)
+        np.testing.assert_array_equal(res.columns, expected.columns)
+
+        np.testing.assert_array_equal(pd.isnull(res), pd.isnull(expected))
+        np.testing.assert_array_equal(
+            res.values[~pd.isnull(res)], expected.values[~pd.isnull(expected)]
+        )
+
+    def test_graph_not_a_dataframe(self):
+        with pytest.raises(
+            TypeError, match=r"Expected `data` to be of type `pandas.DataFrame`,"
+        ):
+            SignedPTMs.graph(42)
+
+    def test_graph_source_target(self):
+        ptms = pd.DataFrame(
+            {
+                "enzyme": ["alpha", "beta", "gamma"],
+                "substrate": [0, 1, 0],
+                "foo": 42,
+                "enzyme_genesymbol": "bar",
+                "substrate_genesymbol": "baz",
+            }
+        )
+        src, tgt = SignedPTMs._get_source_target_cols(ptms)
+
+        assert src == "enzyme_genesymbol"
+        assert tgt == "substrate_genesymbol"
+
+        src, tgt = SignedPTMs._get_source_target_cols(
+            ptms[ptms.columns.difference(["enzyme_genesymbol", "substrate_genesymbol"])]
+        )
+
+        assert src == "enzyme"
+        assert tgt == "substrate"
+
+    def test_graph(self):
+        import networkx as nx
+
+        ptms = pd.DataFrame(
+            {
+                "enzyme": ["alpha", "beta", "gamma"],
+                "substrate": [0, 1, 0],
+                "foo": 42,
+                "references": "bar;baz",
+            }
+        )
+        interactions = pd.DataFrame(
+            {
+                "source": ["gamma", "beta", "delta"],
+                "target": [0, 0, 1],
+                "is_stimulation": True,
+                "is_inhibition": False,
+                "bar": 1337,
+            }
+        )
+        expected = pd.merge(
+            ptms,
+            interactions[["source", "target", "is_stimulation", "is_inhibition"]],
+            left_on=["enzyme", "substrate"],
+            right_on=["source", "target"],
+            how="left",
+        )
+
+        G = SignedPTMs.graph(expected)
+
+        assert isinstance(G, nx.DiGraph)
+        assert G.is_directed()
+        assert len(G) == 5
+        for _, _, attr in G.edges(data=True):
+            assert attr["foo"] == 42
+            assert attr["references"] == ["bar", "baz"]
 
 
 class TestUtils:

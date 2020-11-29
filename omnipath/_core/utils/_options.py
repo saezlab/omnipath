@@ -61,14 +61,14 @@ class Options:
     cache
         Type of a cache. If `None`, cache files to memory. If a :class:`str`, persist files into a directory.
     autoload
-        Whether to contant the server at ``url`` during import to get the server version and the most up-to-date
-        query paramters and their valid options.
+        Whether to contact the server at ``url`` during import to get the server version and the most up-to-date
+        query parameters and their valid options.
     convert_dtypes
         Whether to convert the data types of the resulting :class:`pandas.DataFrame`.
     num_retries
         Number of retries before giving up.
     timeout
-        Timout in seconds when awaiting response.
+        Timeout in seconds when awaiting response.
     chunk_size
         Size in bytes in which to read the data.
     progress_bar

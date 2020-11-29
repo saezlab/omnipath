@@ -403,9 +403,7 @@ class GraphLike(ABC):
         pass
 
     @classmethod
-    def graph(
-        cls, data: Optional[pd.DataFrame] = None, **kwargs
-    ) -> "networkx.classes.digraph.DiGraph":  # noqa: F821
+    def graph(cls, data: Optional[pd.DataFrame] = None, **kwargs):
         """
         Create a graph.
 
@@ -418,7 +416,7 @@ class GraphLike(ABC):
 
         Returns
         -------
-        :class:`networkx.classes.digraph.DiGraph`
+        :class:`networkx.DiGraph`
             The interaction graph.
         """
         try:
@@ -448,7 +446,7 @@ class GraphLike(ABC):
             for col in ["references", "references_stripped", "sources"]:
                 if col in data:
                     if ";" in str(attr[col]):
-                        G.edges[s, t][col] = str(attr[col]).split(";")
+                        G.edges[s, t][col] = sorted(str(attr[col]).split(";"))
 
         return G
 
