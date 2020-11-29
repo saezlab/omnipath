@@ -18,6 +18,7 @@ Requests
     requests.Complexes
     requests.Enzsub
     requests.Intercell
+    requests.SignedPTMs
 
 Interactions
 ~~~~~~~~~~~~
@@ -39,14 +40,6 @@ Interactions
     interactions.Transcriptional
     interactions.lncRNAmRNA
     interactions.miRNA
-
-.. module::omnipath.interactions
-.. currentmodule:: omnipath
-
-.. autosummary::
-    :toctree: api
-
-    interactions.get_signed_ptms
     interactions.import_intercell_network
 
 Other

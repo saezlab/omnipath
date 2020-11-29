@@ -7,7 +7,7 @@ from omnipath.constants import InteractionDataset
 from omnipath._core.query import QueryType
 from omnipath._core.utils._docs import d
 from omnipath._core.requests._utils import _inject_params
-from omnipath._core.requests._request import CommonPostProcessor
+from omnipath._core.requests._request import GraphLike, CommonPostProcessor
 from omnipath.constants._pkg_constants import Key, final
 
 Datasets_t = Union[str, InteractionDataset, Sequence[str], Sequence[InteractionDataset]]
@@ -30,7 +30,7 @@ def _to_dataset_set(
 
 
 @d.dedent
-class InteractionRequest(CommonPostProcessor, ABC):
+class InteractionRequest(CommonPostProcessor, GraphLike, ABC):
     """
     Base class for retrieving interactions from [OmniPath]_.
 
@@ -96,6 +96,13 @@ class InteractionRequest(CommonPostProcessor, ABC):
         """%(query_params)s"""
         params = super().params()
         return cls._filter_params(params)
+
+    @classmethod
+    def _get_source_target_cols(cls, data: pd.DataFrame) -> Tuple[str, str]:
+        source = "source_genesymbol" if "source_genesymbol" in data else "source"
+        target = "target_genesymbol" if "target_genesymbol" in data else "target"
+
+        return source, target
 
     def _resources(self, **_) -> Tuple[str]:
         return super()._resources(**{Key.DATASETS.s: self._datasets})

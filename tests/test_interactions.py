@@ -10,10 +10,7 @@ from omnipath import options
 from omnipath.constants import Organism, InteractionDataset
 from omnipath._core.requests import Intercell
 from omnipath.constants._pkg_constants import Key, Endpoint
-from omnipath._core.requests.interactions._utils import (
-    get_signed_ptms,
-    import_intercell_network,
-)
+from omnipath._core.requests.interactions._utils import import_intercell_network
 from omnipath._core.requests.interactions._interactions import (
     TFmiRNA,
     Dorothea,
@@ -41,6 +38,31 @@ class TestInteractions:
             ValueError, match=r"Invalid value `foo` for `InteractionDataset`."
         ):
             AllInteractions.get(exclude="foo")
+
+    def test_graph_source_target(self):
+        interaction = pd.DataFrame(
+            {
+                "source": ["alpha", "beta", "gamma"],
+                "target": [0, 1, 0],
+                "source_genesymbol": "bar",
+                "target_genesymbol": "baz",
+            }
+        )
+        src, tgt = AllInteractions._get_source_target_cols(interaction)
+
+        assert src == "source_genesymbol"
+        assert tgt == "target_genesymbol"
+
+        src, tgt = AllInteractions._get_source_target_cols(
+            interaction[
+                interaction.columns.difference(
+                    ["source_genesymbol", "target_genesymbol"]
+                )
+            ]
+        )
+
+        assert src == "source"
+        assert tgt == "target"
 
     @pytest.mark.parametrize(
         "interaction",
@@ -143,45 +165,6 @@ class TestInteractions:
 
 
 class TestUtils:
-    def test_get_signed_ptms_wrong_ptms_type(self):
-        with pytest.raises(TypeError, match=r"Expected `ptms`"):
-            get_signed_ptms(42, pd.DataFrame())
-
-    def test_get_signed_ptms_wrong_interactions_type(self):
-        with pytest.raises(TypeError, match=r"Expected `interactions`"):
-            get_signed_ptms(pd.DataFrame(), 42)
-
-    def test_get_signed_ptms(self):
-        ptms = pd.DataFrame(
-            {"enzyme": ["alpha", "beta", "gamma"], "substrate": [0, 1, 0], "foo": 42}
-        )
-        interactions = pd.DataFrame(
-            {
-                "source": ["gamma", "beta", "delta"],
-                "target": [0, 0, 1],
-                "is_stimulation": True,
-                "is_inhibition": False,
-                "bar": 1337,
-            }
-        )
-        expected = pd.merge(
-            ptms,
-            interactions[["source", "target", "is_stimulation", "is_inhibition"]],
-            left_on=["enzyme", "substrate"],
-            right_on=["source", "target"],
-            how="left",
-        )
-
-        res = get_signed_ptms(ptms, interactions)
-
-        np.testing.assert_array_equal(res.index, expected.index)
-        np.testing.assert_array_equal(res.columns, expected.columns)
-
-        np.testing.assert_array_equal(pd.isnull(res), pd.isnull(expected))
-        np.testing.assert_array_equal(
-            res.values[~pd.isnull(res)], expected.values[~pd.isnull(expected)]
-        )
-
     def test_import_intercell_network(
         self,
         cache_backup,

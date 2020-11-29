@@ -1,7 +1,4 @@
-from omnipath._core.requests.interactions._utils import (
-    get_signed_ptms,
-    import_intercell_network,
-)
+from omnipath._core.requests.interactions._utils import import_intercell_network
 from omnipath._core.requests.interactions._interactions import (
     TFmiRNA,
     Dorothea,
