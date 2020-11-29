@@ -199,7 +199,7 @@ class TestInteractions(RTester):
 
 
 class TestUtils(RTester):
-    @pytest.mark.skip(reason="TODO: our impl. returns 2 rows less - 829 vs 827.")
+    @pytest.mark.skip(reason="TODO: different index order, ref. mismatch")
     def test_import_intercell_network(self):
         from rpy2.robjects import ListVector
 

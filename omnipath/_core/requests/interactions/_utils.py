@@ -33,7 +33,7 @@ def _swap_undirected(df: pd.DataFrame) -> pd.DataFrame:
         ]
     if "ncbi_tax_id_source" in undirected.columns:
         undirected_swapped[["ncbi_tax_id_source", "ncbi_tax_id_target"]] = undirected[
-            ["ncbi_tax_id_targer", "ncbi_tax_id_source"]
+            ["ncbi_tax_id_target", "ncbi_tax_id_source"]
         ]
 
     return pd.concat(

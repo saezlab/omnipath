@@ -206,7 +206,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         def to_logical(col: pd.Series) -> pd.Series:
             if is_numeric_dtype(col):
                 return col > 0
-            return col.astype(str).str.lower().isin("y", "t", "yes", "true", "1")
+            return col.astype(str).str.lower().isin(("y", "t", "yes", "true", "1"))
 
         def handle_logical(df: pd.DataFrame, columns: frozenset) -> None:
             cols = list(frozenset(df.columns) & columns)
