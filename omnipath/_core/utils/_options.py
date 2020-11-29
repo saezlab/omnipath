@@ -83,7 +83,10 @@ class Options:
         on_setattr=attr.setters.validate,
     )
     license: License = attr.ib(
-        default=License.ACADEMIC, converter=License, on_setattr=attr.setters.convert
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of((str, License))),
+        converter=(lambda l: None if l is None else License(l)),
+        on_setattr=attr.setters.convert,
     )
     password: Optional[str] = attr.ib(
         default=None,
@@ -138,7 +141,7 @@ class Options:
         config = configparser.ConfigParser()
         # do not save the password
         config[section] = {
-            "license": self.license.value,
+            "license": str(None if self.license is None else self.license.value),
             "cache_dir": str(self.cache.path),
             "autoload": self.autoload,
             "convert_dtypes": self.convert_dtypes,
@@ -178,12 +181,12 @@ class Options:
 
         cache = config.get(section, "cache_dir", fallback=DEFAULT_OPTIONS.cache_dir)
         cache = None if cache == "None" else cache
+        license = config.get(section, "license", fallback=DEFAULT_OPTIONS.license)
+        license = None if license == "None" else License(license)
 
         return cls(
             url=section,
-            license=License(
-                config.get(section, "license", fallback=DEFAULT_OPTIONS.license)
-            ),
+            license=license,
             num_retries=config.getint(
                 section, "num_retries", fallback=DEFAULT_OPTIONS.num_retries
             ),

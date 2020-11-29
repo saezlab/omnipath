@@ -138,7 +138,9 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
             pass
 
         # check the license
-        license = params.pop("license", params.pop("licenses", None))
+        license = params.pop(
+            "license", params.pop("licenses", self._downloader._options.license)
+        )
         if license is not None:
             license = License(license)
             try:

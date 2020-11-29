@@ -29,6 +29,7 @@ def _assert_dataframes_equal(
 
     # some small naming discrepancy
     actual.rename(columns={"n_primary_sources": "n_resources"}, inplace=True)
+    # these are always present in our case
     if remove_metadata is None:
         remove_metadata = ["n_sources", "references_stripped"]
     for k in remove_metadata:

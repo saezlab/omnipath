@@ -1,4 +1,5 @@
 from os import environ
+from typing import Optional
 from pathlib import Path
 
 from omnipath.constants import License, Organism
@@ -30,7 +31,7 @@ class DEFAULT_OPTIONS:
     """Default options for :attr:`omnipath.options`."""
 
     url: str = "https://omnipathdb.org"
-    license: License = License.ACADEMIC
+    license: Optional[License] = None
     num_retries: int = 3
     timeout: int = 600
     chunk_size: int = 8196
@@ -39,7 +40,7 @@ class DEFAULT_OPTIONS:
     progress_bar: bool = True
     autoload: bool = (
         environ.get("OMNIPATH_AUTOLOAD", "") == ""
-    )  # this is done because for testing purposes
+    )  # this is done for the testing purposes
     convert_dtypes: bool = True
 
 
