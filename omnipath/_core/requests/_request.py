@@ -24,6 +24,7 @@ from omnipath.constants import License, Organism
 from omnipath._core.query import QueryType
 from omnipath._core.utils._docs import d
 from omnipath._core.requests._utils import (
+    _ERROR_EMPTY_FMT,
     _inject_params,
     _inject_api_method,
     _strip_resource_label,
@@ -432,6 +433,8 @@ class GraphLike(ABC):
             raise TypeError(
                 f"Expected `data` to be of type `pandas.DataFrame`, found `{type(data).__name__}`."
             )
+        if data.empty:
+            raise ValueError(_ERROR_EMPTY_FMT.format(obj="data"))
 
         source, target = cls._get_source_target_cols(data)
         G = nx.from_pandas_edgelist(
@@ -520,6 +523,10 @@ class SignedPTMs(Enzsub, GraphLike):
             raise TypeError(
                 f"Expected `interactions` to be of type `pandas.DataFrame`, found `{type(ptms).__name__}`."
             )
+        if ptms.empty:
+            raise ValueError(_ERROR_EMPTY_FMT.format(obj="PTMs"))
+        if interactions.empty:
+            raise ValueError(_ERROR_EMPTY_FMT.format(obj="interactions"))
 
         return pd.merge(
             ptms,

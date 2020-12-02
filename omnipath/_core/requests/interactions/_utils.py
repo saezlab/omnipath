@@ -3,6 +3,7 @@ from typing import Any, Dict, Mapping, Optional
 import pandas as pd
 
 from omnipath.constants._constants import InteractionDataset
+from omnipath._core.requests._utils import _ERROR_EMPTY_FMT
 from omnipath._core.requests._intercell import Intercell
 from omnipath._core.requests.interactions._interactions import (
     Datasets_t,
@@ -97,10 +98,16 @@ def import_intercell_network(
     receiver_params.setdefault("scope", "generic")
 
     interactions = AllInteractions.get(include=include, **interactions_params)
+    if interactions.empty:
+        raise ValueError(_ERROR_EMPTY_FMT.format(obj="interactions"))
     interactions = _swap_undirected(interactions)
 
     transmitters = Intercell.get(**transmitter_params)
+    if transmitters.empty:
+        raise ValueError(_ERROR_EMPTY_FMT.format(obj="transmitters"))
     receivers = Intercell.get(**receiver_params)
+    if receivers.empty:
+        raise ValueError(_ERROR_EMPTY_FMT.format(obj="receivers"))
 
     # fmt: off
     intracell = ['intracellular_intercellular_related', 'intracellular']

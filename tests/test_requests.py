@@ -389,6 +389,36 @@ class TestSignedPTMs:
         ):
             SignedPTMs.graph(42)
 
+    def test_graph_empty_ptms(self):
+        ptms = pd.DataFrame()
+        interactions = pd.DataFrame(
+            {
+                "source": ["gamma", "beta", "delta"],
+                "target": [0, 0, 1],
+                "is_stimulation": True,
+                "is_inhibition": False,
+                "bar": 1337,
+            }
+        )
+
+        with pytest.raises(ValueError, match=r"No PTMs were retrieved. Please"):
+            SignedPTMs.get(ptms, interactions)
+
+    def test_graph_empty_interactions(self):
+        ptms = pd.DataFrame(
+            {
+                "enzyme": ["alpha", "beta", "gamma"],
+                "substrate": [0, 1, 0],
+                "foo": 42,
+                "enzyme_genesymbol": "bar",
+                "substrate_genesymbol": "baz",
+            }
+        )
+        interactions = pd.DataFrame()
+
+        with pytest.raises(ValueError, match=r"No interactions were retrieved. Please"):
+            SignedPTMs.get(ptms, interactions)
+
     def test_graph_source_target(self):
         ptms = pd.DataFrame(
             {

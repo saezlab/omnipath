@@ -154,3 +154,8 @@ def _strip_resource_label(
     return _split_unique_join(
         _split_unique_join(data.str.replace(r"[-\w]*:?(\d+)", r"\1")), func=func
     )
+
+
+_ERROR_EMPTY_FMT = (
+    "No {obj} were retrieved. Please check if supplying valid parameter values."
+)

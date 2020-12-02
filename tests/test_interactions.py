@@ -1,3 +1,4 @@
+from io import StringIO
 from urllib.parse import urljoin, quote_plus
 import json
 
@@ -38,6 +39,10 @@ class TestInteractions:
             ValueError, match=r"Invalid value `foo` for `InteractionDataset`."
         ):
             AllInteractions.get(exclude="foo")
+
+    def test_graph_empty(self):
+        with pytest.raises(ValueError, match=r"No data were retrieved. Please"):
+            AllInteractions.graph(pd.DataFrame())
 
     def test_graph_source_target(self):
         interaction = pd.DataFrame(
@@ -218,3 +223,57 @@ class TestUtils:
             import_intercell_result.values[~pd.isnull(import_intercell_result)],
         )
         assert len(requests_mock.request_history) == 3
+
+    @pytest.mark.parametrize("which", ["interactions", "receivers", "transmitters"])
+    def test_intercell_empty(
+        self,
+        which: str,
+        cache_backup,
+        requests_mock,
+        interactions_data: bytes,
+        transmitters_data: bytes,
+        receivers_data: bytes,
+    ):
+        interactions_url = urljoin(options.url, AllInteractions._query_type.endpoint)
+        intercell_url = urljoin(options.url, Intercell._query_type.endpoint)
+
+        handle = StringIO()
+        pd.DataFrame({"is_directed": []}).to_csv(handle, sep="\t", index=False)
+        empty_data = bytes(handle.getvalue(), encoding="utf-8")
+
+        if which == "interactions":
+            interactions_data = empty_data
+        elif which == "receivers":
+            receivers_data = empty_data
+        elif which == "transmitters":
+            transmitters_data = empty_data
+        else:
+            raise AssertionError(which)
+
+        # interactions
+        requests_mock.register_uri(
+            "GET",
+            f"{interactions_url}?datasets=omnipath,pathwayextra&fields=curation_effort%2C"
+            f"references%2Csources%2Ctype&format=tsv&resources=CellPhoneDB",
+            content=interactions_data,
+        )
+        # transmitter
+        requests_mock.register_uri(
+            "GET",
+            f"{intercell_url}?categories=ligand&causality=trans&format=tsv&scope=generic",
+            content=transmitters_data,
+        )
+        # receiver
+        requests_mock.register_uri(
+            "GET",
+            f"{intercell_url}?categories=receptor&causality=rec&format=tsv&scope=generic",
+            content=receivers_data,
+        )
+
+        with pytest.raises(ValueError, match=rf"No {which} were retrieved. Please"):
+            import_intercell_network(
+                include=(InteractionDataset.OMNIPATH, InteractionDataset.PATHWAY_EXTRA),
+                transmitter_params={"categories": "ligand"},
+                interactions_params={"resources": "CellPhoneDB"},
+                receiver_params={"categories": "receptor"},
+            )
