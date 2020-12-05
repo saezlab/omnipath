@@ -122,6 +122,8 @@ def import_intercell_network(
     receivers[["category", "parent", "database"]] = receivers[["category", "parent", "database"]].astype(str)
 
     res = pd.merge(interactions, transmitters, left_on="source", right_on="uniprot", how="inner")
+    if res.empty:
+        raise ValueError("No values are left after merging interactions and transmitters.")
     gb = res.groupby(["category", "parent", "source", "target"], as_index=False)
     # fmt: on
 
@@ -136,6 +138,8 @@ def import_intercell_network(
         right_on="uniprot",
         suffixes=["_intercell_source", "_intercell_target"],
     )
+    if res.empty:
+        raise ValueError("No values are left after merging interactions and receivers.")
     gb = res.groupby(
         [
             "category_intercell_source",
