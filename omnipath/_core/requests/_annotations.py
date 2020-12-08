@@ -55,8 +55,11 @@ class Annotations(OmnipathRequestABC):
 
             In order to download annotations for proteins complexes, write **'COMPLEX:'** before the gene symbols of
             the genes integrating the complex.
+
+            If `None`, fetch annotations for all available genes or proteins.
         resources
             Load the annotations only from these databases. See :meth:`resources` for available options.
+            If `None`, use all available resources.
         force_full_download
             Force the download of the entire annotations dataset. The full size of the data is ~1GB.
             We recommend to retrieve the annotations for a set of proteins or only from a few resources,

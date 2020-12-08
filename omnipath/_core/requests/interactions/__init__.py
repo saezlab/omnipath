@@ -9,6 +9,7 @@ from omnipath._core.requests.interactions._interactions import (
     PathwayExtra,
     AllInteractions,
     Transcriptional,
+    PostTranslational,
     miRNA,
     lncRNAmRNA,
 )

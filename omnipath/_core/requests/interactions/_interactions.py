@@ -232,7 +232,7 @@ class TFtarget(InteractionRequest):
 @final
 class Transcriptional(InteractionRequest):
     """
-    Request all `TF-target` interactions of [OmniPath]_.
+    Request all `TF-target` interactions from [OmniPath]_.
 
     Imports the `dataset <https://omnipathdb.org/interactions?datasets=dorothea,tf_target>`__ which contains
     transcription factor-target protein coding gene interactions.
@@ -377,10 +377,18 @@ class AllInteractions(InteractionRequest):
         return cls(include, exclude=exclude)._get(**kwargs)
 
 
+# ideally docrep would be possible, but the metaclass is not perfect and gets rid of the info
 @final
 class PostTranslational(AllInteractions):
     """
     Request all post-translational interactions from [OmniPath]_ .
+
+    This query requests the interactions from the following datasets:
+
+        - :attr:`omnipath.constants.InteractionDataset.OMNIPATH`
+        - :attr:`omnipath.constants.InteractionDataset.PATHWAY_EXTRA`
+        - :attr:`omnipath.constants.InteractionDataset.KINASE_EXTRA`
+        - :attr:`omnipath.constants.InteractionDataset.LIGREC_EXTRA`
 
     Parameters
     ----------
