@@ -185,6 +185,28 @@ class LigRecExtra(CommonParamFilter):
 
 
 @final
+class PostTranslational(InteractionRequest):
+    """
+    Request all post-translational interactions of [OmniPath]_.
+
+    Imports the `dataset <https://omnipathdb.org/interactions?datasets=omnipath,pathwayextra,kinaseextra,ligrecextra>`__ which contains
+    post-transcriptional (i.e. protein-protein) interactions.
+    """
+
+    def __init__(self):
+        super().__init__((
+            InteractionDataset.OMNIPATH,
+            InteractionDataset.PATHWAY_EXTRA,
+            InteractionDataset.KINASE_EXTRA,
+            InteractionDataset.LIGREC_EXTRA,
+        ))
+
+    @classmethod
+    def _filter_params(cls, params: Dict[str, Any]) -> Dict[str, Any]:
+        return super()._filter_params(params)
+
+
+@final
 class Dorothea(InteractionRequest):
     """
     Request interactions from the `dorothea` dataset.
@@ -388,6 +410,7 @@ __all__ = [
     PathwayExtra,
     AllInteractions,
     Transcriptional,
+    PostTranslational,
     TFmiRNA,
     miRNA,
     lncRNAmRNA,
