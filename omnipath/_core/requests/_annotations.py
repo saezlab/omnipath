@@ -81,6 +81,11 @@ class Annotations(OmnipathRequestABC):
             raise ValueError(
                 "Please specify `force_full_download=True` in order to download the full dataset."
             )
+        res_info = (
+            "all resources"
+            if resources is None
+            else f"the following resources: `{[resources] if isinstance(resources, str) else sorted(set(resources))}`"
+        )
         inst = cls()
 
         if proteins is not None:
@@ -89,7 +94,7 @@ class Annotations(OmnipathRequestABC):
             proteins = sorted(set(proteins))
 
             logging.info(
-                f"Downloading annotations for `{len(proteins)}` in `{_MAX_N_PROTS}` chunks"
+                f"Downloading annotations for `{len(proteins)}` in `{_MAX_N_PROTS}` chunks from {res_info}"
             )
 
             return pd.concat(
@@ -104,9 +109,7 @@ class Annotations(OmnipathRequestABC):
                 ]
             )
 
-        logging.info(
-            f"Downloading annotations for all proteins from the following resources: `{list(set(resources))}`"
-        )
+        logging.info(f"Downloading annotations for all proteins from {res_info}")
 
         return inst._get(proteins=None, resources=resources, **kwargs)
 
