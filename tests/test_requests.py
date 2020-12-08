@@ -16,6 +16,7 @@ from omnipath._core.requests import SignedPTMs
 from omnipath._core.query._query import EnzsubQuery
 from omnipath._core.requests._utils import _split_unique_join, _strip_resource_label
 from omnipath.constants._pkg_constants import Key, Endpoint
+from omnipath._core.requests._annotations import _MAX_N_PROTS
 
 
 class TestEnzsub:
@@ -307,8 +308,11 @@ class TestComplex:
 
 class TestAnnotations:
     def test_too_many_proteins_requested(self):
-        with pytest.raises(ValueError, match=r"Cannot download annotations for"):
-            Annotations.get([f"foo_{i}" for i in range(601)])
+        with pytest.raises(
+            ValueError,
+            match=r"Please specify `force_full_download=True` in order to download the full dataset.",
+        ):
+            Annotations.get()
 
     def test_params(self):
         params = Annotations.params()
@@ -337,6 +341,55 @@ class TestAnnotations:
         df = pd.read_csv(StringIO(tsv_data.decode("utf-8")), sep="\t")
 
         res = Annotations.get(["foo", "foo"], organism="foobarbaz")
+
+        np.testing.assert_array_equal(res.index, df.index)
+        np.testing.assert_array_equal(res.columns, df.columns)
+        np.testing.assert_array_equal(res.values, df.values)
+
+    @pytest.mark.parametrize(
+        "n_prots",
+        [
+            _MAX_N_PROTS - 1,
+            _MAX_N_PROTS,
+            _MAX_N_PROTS + 1,
+            2 * _MAX_N_PROTS,
+            3 * _MAX_N_PROTS + 42,
+        ],
+    )
+    def test_downloading_more_than_n_proteins(
+        self, n_prots: int, cache_backup, requests_mock, tsv_data: bytes
+    ):
+        url = urljoin(options.url, Annotations._query_type.endpoint)
+        prots = sorted(f"foo{i}" for i in range(n_prots))
+
+        for i in range((n_prots // _MAX_N_PROTS) + 1):
+            tmp = prots[i * _MAX_N_PROTS : (i + 1) * _MAX_N_PROTS]
+            if not len(tmp):
+                break
+            requests_mock.register_uri(
+                "GET",
+                f"{url}?format=tsv&proteins={'%2C'.join(tmp)}",
+                content=tsv_data,
+            )
+        df = pd.read_csv(StringIO(tsv_data.decode("utf-8")), sep="\t")
+
+        res = Annotations.get(proteins=prots)
+
+        np.testing.assert_array_equal(res.columns, df.columns)
+        assert len(res) == (len(df) * int(np.ceil(n_prots / _MAX_N_PROTS)))
+
+        if n_prots <= _MAX_N_PROTS:
+            np.testing.assert_array_equal(res.index, df.index)
+            np.testing.assert_array_equal(res.values, df.values)
+
+    def test_resources(self, cache_backup, requests_mock, tsv_data: bytes):
+        url = urljoin(options.url, Annotations._query_type.endpoint)
+        requests_mock.register_uri(
+            "GET", f"{url}?format=tsv&proteins=foo&resources=bar", content=tsv_data
+        )
+        df = pd.read_csv(StringIO(tsv_data.decode("utf-8")), sep="\t")
+
+        res = Annotations.get("foo", resources="bar")
 
         np.testing.assert_array_equal(res.index, df.index)
         np.testing.assert_array_equal(res.columns, df.columns)
