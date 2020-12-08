@@ -179,6 +179,7 @@ setup(
         "graph": ["networkx>=4.3.0"],
         "tests": [
             "tox>=3.20.1",
+            "requests_mock",
         ],
         "docs": [
             line
