@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union, Mapping, Iterable
+from typing import Any, Dict, Union, Mapping, Iterable, Optional
 
 import pandas as pd
 
@@ -6,6 +6,8 @@ from omnipath._core.query import QueryType
 from omnipath._core.utils._docs import d
 from omnipath._core.requests._request import OmnipathRequestABC
 from omnipath.constants._pkg_constants import Key, final
+
+_MAX_N_PROTS = 600
 
 
 @final
@@ -35,6 +37,7 @@ class Annotations(OmnipathRequestABC):
     def get(
         cls,
         proteins: Union[str, Iterable[str]],
+        resources: Optional[Union[str, Iterable[str]]] = None,
         **kwargs,
     ) -> pd.DataFrame:
         """
@@ -50,6 +53,8 @@ class Annotations(OmnipathRequestABC):
 
             In order to download annotations for proteins complexes, write **'COMPLEX:'** before the gene symbols of
             the genes integrating the complex.
+        resources
+            Load the annotations only from these databases. See :meth:`resources` for available options.
         kwargs
             Additional query parameters.
 
@@ -65,14 +70,19 @@ class Annotations(OmnipathRequestABC):
         """
         if isinstance(proteins, str):
             proteins = (proteins,)
-        proteins = tuple(set(proteins))
+        proteins = sorted(set(proteins))
 
-        if len(proteins) > 600:
-            raise ValueError(
-                "Cannot download annotations for more than `600` proteins yet."
-            )
-
-        return cls()._get(proteins=proteins, **kwargs)
+        return pd.concat(
+            [
+                cls().get(
+                    proteins=proteins[i * _MAX_N_PROTS : (i + 1) : _MAX_N_PROTS],
+                    resources=resources,
+                    **kwargs,
+                )
+                for i in range(len(proteins) // _MAX_N_PROTS + 1)
+                if len(proteins[i * _MAX_N_PROTS : (i + 1) : _MAX_N_PROTS])
+            ]
+        )
 
     def _resource_filter(self, data: Mapping[str, Any], **_) -> bool:
         return True
