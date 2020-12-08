@@ -177,9 +177,7 @@ setup(
     ),
     extras_require={
         "graph": ["networkx>=4.3.0"],
-        "tests": [
-            "tox>=3.20.1",
-        ],
+        "tests": ["tox>=3.20.1"],
         "docs": [
             line
             for line in (Path("docs") / "requirements.txt")
