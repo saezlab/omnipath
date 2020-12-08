@@ -74,7 +74,7 @@ class Annotations(OmnipathRequestABC):
 
         return pd.concat(
             [
-                cls().get(
+                cls()._get(
                     proteins=proteins[i * _MAX_N_PROTS : (i + 1) : _MAX_N_PROTS],
                     resources=resources,
                     **kwargs,
