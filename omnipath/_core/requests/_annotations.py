@@ -17,7 +17,7 @@ class Annotations(OmnipathRequestABC):
 
     _query_type = QueryType.ANNOTATIONS
 
-    def _remove_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _modify_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
         params.pop(Key.ORGANISM.value, None)
 
         return params
@@ -34,7 +34,6 @@ class Annotations(OmnipathRequestABC):
     @classmethod
     def get(
         cls,
-        proteins: Union[str, Iterable[str]],
         **kwargs,
     ) -> pd.DataFrame:
         """
@@ -63,16 +62,34 @@ class Annotations(OmnipathRequestABC):
         There might be also a few miRNAs annotated. A vast majority of protein complex annotations are inferred
         from the annotations of the members: if all members carry the same annotation the complex inherits.
         """
-        if isinstance(proteins, str):
-            proteins = (proteins,)
-        proteins = tuple(set(proteins))
 
-        if len(proteins) > 600:
+        if not any(
+            kw in kwargs
+            for kw in ("proteins", "resources", "databases")
+        ):
+
             raise ValueError(
-                "Cannot download annotations for more than `600` proteins yet."
+                "Downloading the entire annotations database is not allowed "
+                "due to its huge size (>1GB). Please query a set of proteins "
+                "or a few resources, depending on your interest."
             )
 
-        return cls()._get(proteins=proteins, **kwargs)
+        if "proteins" in kwargs:
+
+            proteins = kwargs["proteins"]
+            if isinstance(proteins, str):
+                proteins = (proteins,)
+            proteins = tuple(set(proteins))
+
+            if len(proteins) > 600:
+                raise ValueError(
+                    "Cannot download annotations for "
+                    "more than `600` proteins yet."
+                )
+
+            kwargs["proteins"] = proteins
+
+        return cls()._get(**kwargs)
 
     def _resource_filter(self, data: Mapping[str, Any], **_) -> bool:
         return True

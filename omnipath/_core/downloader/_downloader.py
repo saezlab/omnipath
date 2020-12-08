@@ -155,13 +155,14 @@ class Downloader:
             req, stream=True, timeout=self._options.timeout
         ) as resp:
             resp.raise_for_status()
+            total = resp.headers.get("content-length", None)
 
             with tqdm(
                 unit="B",
                 unit_scale=True,
                 miniters=1,
                 unit_divisor=1024,
-                total=len(resp.content),
+                total=total if total is None else int(total),
                 disable=not self._options.progress_bar,
             ) as t:
                 for chunk in resp.iter_content(chunk_size=self._options.chunk_size):

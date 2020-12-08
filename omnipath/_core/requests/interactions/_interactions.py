@@ -7,7 +7,7 @@ from omnipath.constants import InteractionDataset
 from omnipath._core.query import QueryType
 from omnipath._core.utils._docs import d
 from omnipath._core.requests._utils import _inject_params
-from omnipath._core.requests._request import CommonPostProcessor
+from omnipath._core.requests._request import GraphLike, CommonPostProcessor
 from omnipath.constants._pkg_constants import Key, final
 
 Datasets_t = Union[str, InteractionDataset, Sequence[str], Sequence[InteractionDataset]]
@@ -30,7 +30,7 @@ def _to_dataset_set(
 
 
 @d.dedent
-class InteractionRequest(CommonPostProcessor, ABC):
+class InteractionRequest(CommonPostProcessor, GraphLike, ABC):
     """
     Base class for retrieving interactions from [OmniPath]_.
 
@@ -78,6 +78,11 @@ class InteractionRequest(CommonPostProcessor, ABC):
 
         self._datasets = datasets
 
+    def _modify_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        params = super()._modify_params(params)
+        params[self._query_type("datasets").param] = self._datasets
+        return params
+
     @classmethod
     @abstractmethod
     def _filter_params(cls, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -91,6 +96,13 @@ class InteractionRequest(CommonPostProcessor, ABC):
         """%(query_params)s"""
         params = super().params()
         return cls._filter_params(params)
+
+    @classmethod
+    def _get_source_target_cols(cls, data: pd.DataFrame) -> Tuple[str, str]:
+        source = "source_genesymbol" if "source_genesymbol" in data else "source"
+        target = "target_genesymbol" if "target_genesymbol" in data else "target"
+
+        return source, target
 
     def _resources(self, **_) -> Tuple[str]:
         return super()._resources(**{Key.DATASETS.s: self._datasets})
@@ -170,6 +182,28 @@ class LigRecExtra(CommonParamFilter):
 
     def __init__(self):
         super().__init__(InteractionDataset.LIGREC_EXTRA)
+
+
+@final
+class PostTranslational(InteractionRequest):
+    """
+    Request all post-translational interactions of [OmniPath]_.
+
+    Imports the `dataset <https://omnipathdb.org/interactions?datasets=omnipath,pathwayextra,kinaseextra,ligrecextra>`__ which contains
+    post-transcriptional (i.e. protein-protein) interactions.
+    """
+
+    def __init__(self):
+        super().__init__((
+            InteractionDataset.OMNIPATH,
+            InteractionDataset.PATHWAY_EXTRA,
+            InteractionDataset.KINASE_EXTRA,
+            InteractionDataset.LIGREC_EXTRA,
+        ))
+
+    @classmethod
+    def _filter_params(cls, params: Dict[str, Any]) -> Dict[str, Any]:
+        return super()._filter_params(params)
 
 
 @final
@@ -305,23 +339,28 @@ class OmniPath(InteractionRequest):
 
 
 @final
+@d.get_sections(base="all_ints", sections=["Parameters"])
 @d.dedent
 class AllInteractions(InteractionRequest):
     """
     Request all [OmniPath]_ interaction datasets.
 
+    The available interaction datasets are :class:`omnipath.constants.InteractionDataset`.
+
     Parameters
     ----------
+    include
+        Interactions datasets to include from the [OmniPath]_ database. If `None`, include everything.
     exclude
-        Interaction datasets to exclude from the [OmniPath]_ database. If `None`, don't exclude any.
-        See :meth:`get` or :meth:`params` for available values.
+        Interaction datasets to exclude from the [OmniPath]_ database. If `None`, don't exclude anything.
     """
 
     def __init__(
         self,
-        exclude: Optional[Sequence[InteractionDataset]] = None,
+        include: Optional[Datasets_t] = None,
+        exclude: Optional[Datasets_t] = None,
     ):
-        super().__init__(None, exclude=exclude)
+        super().__init__(include, exclude=exclude)
 
     def _inject_fields(self, params: Dict[str, Any]) -> Dict[str, Any]:
         params = super()._inject_fields(params)
@@ -334,29 +373,32 @@ class AllInteractions(InteractionRequest):
         return super()._filter_params(params)
 
     @classmethod
-    @d.dedent
     @final
+    @d.dedent
     def get(
-        cls, exclude: Optional[Sequence[Datasets_t]] = None, **kwargs
+        cls,
+        include: Optional[Datasets_t] = None,
+        exclude: Optional[Datasets_t] = None,
+        **kwargs,
     ) -> pd.DataFrame:
         """
         %(get.full_desc)s
 
+        The available interaction datasets are :class:`omnipath.constants.InteractionDataset`.
+
         Parameters
         ----------
+        include
+            Interactions datasets to include from the [OmniPath]_ database. If `None`, include everything.
         exclude
-            Interaction datasets to exclude. Can be one or more of the following:
-
-                %(interaction_datasets)s
-
-        kwargs
-            Additional query parameters.
+            Interaction datasets to exclude from the [OmniPath]_ database. If `None`, don't exclude anything.
+        %(get.parameters)s
 
         Returns
         -------
         %(get.returns)s
         """
-        return cls(exclude=exclude)._get(**kwargs)
+        return cls(include, exclude=exclude)._get(**kwargs)
 
 
 __all__ = [
@@ -368,6 +410,7 @@ __all__ = [
     PathwayExtra,
     AllInteractions,
     Transcriptional,
+    PostTranslational,
     TFmiRNA,
     miRNA,
     lncRNAmRNA,

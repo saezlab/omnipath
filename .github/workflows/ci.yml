@@ -11,7 +11,23 @@ on:
       - master
 
 jobs:
+  init:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.ci-skip-step.outputs.ci-skip }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - id: ci-skip-step
+        uses: mstachniuk/ci-skip@master
+        with:
+          commit-filter: '[ci skip];[ci-skip];[skip ci];[skip-ci]'
+          commit-filter-separator: ';'
+
   build:
+    needs: init
+    if: ${{ needs.init.outputs.skip == 'false' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
@@ -25,6 +41,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: '0'
+    - uses: mstachniuk/ci-skip@v1
+      with:
+        fail-fast: true
+        exit-code: 0
     - name: Set up Python ${{ matrix.python }}
       uses: actions/setup-python@v2
       with:
@@ -45,6 +67,26 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install tox tox-gh-actions codecov
+
+    - name: Install R
+      if: matrix.os == 'ubuntu-latest' && matrix.python == '3.8'
+      uses: r-lib/actions/setup-r@v1
+      with:
+        r-version: '4.0.3'
+    - name: Get R cache dir
+      uses: actions/cache@v2
+      if: matrix.os == 'ubuntu-latest' && matrix.python == '3.8'
+      with:
+        path: ~/.local/share/renv
+        key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-renv-
+    - name: Install OmnipathR
+      if: matrix.os == 'ubuntu-latest' && matrix.python == '3.8'
+      run: |
+        sudo apt-get install libcurl4-openssl-dev
+        sudo Rscript --vanilla -e "if (!(requireNamespace('BiocManager', quietly=TRUE))) { install.packages(c('BiocManager', 'curl'), repos='https://cloud.r-project.org/') }; BiocManager::install('OmnipathR')"
+        Rscript --vanilla -e "packageVersion('OmnipathR')"
 
     - name: Linting
       run: |

@@ -24,6 +24,7 @@ from omnipath.constants import License, Organism
 from omnipath._core.query import QueryType
 from omnipath._core.utils._docs import d
 from omnipath._core.requests._utils import (
+    _ERROR_EMPTY_FMT,
     _inject_params,
     _inject_api_method,
     _strip_resource_label,
@@ -97,7 +98,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         return {q.param: q.doc for q in cls._query_type.value}
 
     def _get(self, **kwargs) -> pd.DataFrame:
-        kwargs = self._remove_params(kwargs)
+        kwargs = self._modify_params(kwargs)
         kwargs = self._inject_fields(kwargs)
         kwargs, callback = self._convert_params(kwargs)
         kwargs = self._validate_params(kwargs)
@@ -124,7 +125,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
                 pass
 
         # check the requested format
-        fmt = params.pop("format", params.pop("formats", Format.TSV.s))
+        fmt = params.pop("format", params.pop("formats", None))
         fmt = Format(Format.TSV if fmt is None else fmt)
         if fmt not in (Format.TSV, Format.JSON):
             logging.warning(
@@ -138,7 +139,9 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
             pass
 
         # check the license
-        license = params.pop("license", params.pop("licenses", License.ACADEMIC.s))
+        license = params.pop(
+            "license", params.pop("licenses", self._downloader._options.license)
+        )
         if license is not None:
             license = License(license)
             try:
@@ -175,8 +178,6 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         res = {}
         for k, v in params.items():
             # first get the validator for the parameter, then validate
-            if isinstance(v, Enum):
-                v = v.value
             res[self._query_type(k).param] = self._query_type(k)(v)
         return res
 
@@ -206,7 +207,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         def to_logical(col: pd.Series) -> pd.Series:
             if is_numeric_dtype(col):
                 return col > 0
-            return col.astype(str).str.lower().isin("y", "t", "yes", "true", "1")
+            return col.astype(str).str.lower().isin(("y", "t", "yes", "true", "1"))
 
         def handle_logical(df: pd.DataFrame, columns: frozenset) -> None:
             cols = list(frozenset(df.columns) & columns)
@@ -224,8 +225,10 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
                 df[cols] = df[cols].astype("category")
 
         def handle_string(df: pd.DataFrame, columns: frozenset) -> None:
-            cols = list(frozenset(df.columns) & columns)
-            df[cols] = df[cols].astype(str)
+            for col in frozenset(df.columns) & columns:
+                mask = pd.isnull(df[col])
+                df[col] = df[col].astype(str)
+                df.loc[mask, col] = None
 
         if not isinstance(res, pd.DataFrame):
             raise TypeError(
@@ -263,7 +266,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
             )
         )
 
-    def _remove_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _modify_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """
         Remove parameters from this query.
 
@@ -371,7 +374,7 @@ class CommonPostProcessor(OmnipathRequestABC, ABC):
 class OrganismGenesymbolsRemover(CommonPostProcessor, ABC):
     """Class that removes organism and genesymbols keys from the query."""
 
-    def _remove_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _modify_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
         params.pop(Key.ORGANISM.s, None)
         params.pop(Key.GENESYMBOLS.s, None)
 
@@ -388,8 +391,70 @@ class OrganismGenesymbolsRemover(CommonPostProcessor, ABC):
         return params
 
 
-@final
-class Enzsub(OrganismGenesymbolsRemover):
+class GraphLike(ABC):
+    """
+    Class that is able to construct a graph.
+
+    Should be injected with any class with :meth:`get`.
+    """
+
+    @classmethod
+    @abstractmethod
+    def _get_source_target_cols(cls, data: pd.DataFrame) -> Tuple[str, str]:
+        pass
+
+    @classmethod
+    def graph(cls, data: Optional[pd.DataFrame] = None, **kwargs):
+        """
+        Create a graph.
+
+        Parameters
+        ----------
+        data
+            The interaction data. If `None`, create a new request.
+        kwargs
+            Keyword arguments for :meth:`get` if ``data = None``.
+
+        Returns
+        -------
+        :class:`networkx.DiGraph`
+            The interaction graph.
+        """
+        try:
+            import networkx as nx
+        except ImportError:
+            raise ImportError(
+                "Unable to import `networkx`. Please install it as `pip install network`."
+            ) from None
+
+        data = cls.get(**kwargs) if data is None else data
+
+        if not isinstance(data, pd.DataFrame):
+            raise TypeError(
+                f"Expected `data` to be of type `pandas.DataFrame`, found `{type(data).__name__}`."
+            )
+        if data.empty:
+            raise ValueError(_ERROR_EMPTY_FMT.format(obj="data"))
+
+        source, target = cls._get_source_target_cols(data)
+        G = nx.from_pandas_edgelist(
+            data,
+            source=source,
+            target=target,
+            edge_attr=tuple(data.columns.difference([source, target])),
+            create_using=nx.DiGraph,
+        )
+
+        for s, t, attr in G.edges(data=True):
+            for col in ["references", "references_stripped", "sources"]:
+                if col in data:
+                    if ";" in str(attr[col]):
+                        G.edges[s, t][col] = sorted(str(attr[col]).split(";"))
+
+        return G
+
+
+class Enzsub(CommonPostProcessor):
     """
     Request enzyme-substrate relationships from [OmniPath]_.
 
@@ -400,10 +465,76 @@ class Enzsub(OrganismGenesymbolsRemover):
     __categorical__ = frozenset({"residue_type", "modification"})
 
     _query_type = QueryType.ENZSUB
-    _final = True
 
     def _resource_filter(self, data: Mapping[str, Any], **_) -> bool:
         return True
 
 
-__all__ = [Enzsub]
+@final
+class SignedPTMs(Enzsub, GraphLike):
+    """
+    Request enzyme-substrate relationships and interactions from [OmniPath]_.
+
+    PTM data does not contain sign (activation/inhibition), we generate this information based on the
+    interaction network.
+    """
+
+    @classmethod
+    def _get_source_target_cols(cls, data: pd.DataFrame) -> Tuple[str, str]:
+        source = "enzyme_genesymbol" if "enzyme_genesymbol" in data else "enzyme"
+        target = (
+            "substrate_genesymbol" if "substrate_genesymbol" in data else "substrate"
+        )
+
+        return source, target
+
+    @classmethod
+    def get(
+        cls,
+        ptms: Optional[pd.DataFrame] = None,
+        interactions: Optional[pd.DataFrame] = None,
+    ) -> pd.DataFrame:
+        """
+        Get signs for enzyme-PTM interactions.
+
+        Parameters
+        ----------
+        ptms
+            Data generated by :meth:`omnipath.requests.Enzsub.get`. If `None`, a new request will be performed.
+        interactions
+            Data generated by :meth:`omnipath.interactions.OmniPath.get`.  If `None`, a new request will be performed.
+
+        Returns
+        -------
+        :class:`pandas.DataFrame`
+            The signed PTMs with columns **'is_inhibition'** and **'is_stimulation'**.
+        """
+        from omnipath.requests import Enzsub
+        from omnipath.interactions import OmniPath
+
+        ptms = Enzsub.get() if ptms is None else ptms
+        interactions = OmniPath.get() if interactions is None else interactions
+
+        if not isinstance(ptms, pd.DataFrame):
+            raise TypeError(
+                f"Expected `ptms` to be of type `pandas.DataFrame`, found `{type(ptms).__name__}`."
+            )
+        if not isinstance(interactions, pd.DataFrame):
+            raise TypeError(
+                f"Expected `interactions` to be of type `pandas.DataFrame`, found `{type(ptms).__name__}`."
+            )
+        if ptms.empty:
+            raise ValueError(_ERROR_EMPTY_FMT.format(obj="PTMs"))
+        if interactions.empty:
+            raise ValueError(_ERROR_EMPTY_FMT.format(obj="interactions"))
+
+        return pd.merge(
+            ptms,
+            interactions[["source", "target", "is_stimulation", "is_inhibition"]],
+            left_on=["enzyme", "substrate"],
+            right_on=["source", "target"],
+            how="left",
+        )
+
+
+__all__ = [Enzsub, SignedPTMs]

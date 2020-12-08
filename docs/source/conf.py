@@ -51,6 +51,7 @@ extensions = [
 intersphinx_mapping = dict(
     python=("https://docs.python.org/3", None),
     pandas=("https://pandas.pydata.org/pandas-docs/stable/", None),
+    networkx=("https://networkx.github.io/documentation/stable/", None),
 )
 
 # Add any paths that contain templates here, relative to this directory.

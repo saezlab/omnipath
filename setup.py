@@ -22,7 +22,7 @@ except ImportError:
     __author__ = "Michal Klein, Dénes Türei"
     __maintainer__ = "Michal Klein, Dénes Türei"
     __email__ = "turei.denes@gmail.com"
-    __version__ = "1.0.0"
+    __version__ = "1.0.2"
 
 
 setup(
@@ -176,6 +176,7 @@ setup(
         )
     ),
     extras_require={
+        "graph": ["networkx>=4.3.0"],
         "tests": [
             "tox>=3.20.1",
         ],
