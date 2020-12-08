@@ -316,7 +316,6 @@ class OmniPath(InteractionRequest):
         super().__init__(InteractionDataset.OMNIPATH)
 
 
-@final
 @d.get_sections(base="all_ints", sections=["Parameters"])
 @d.dedent
 class AllInteractions(InteractionRequest):
@@ -351,7 +350,6 @@ class AllInteractions(InteractionRequest):
         return super()._filter_params(params)
 
     @classmethod
-    @final
     @d.dedent
     def get(
         cls,
@@ -379,6 +377,53 @@ class AllInteractions(InteractionRequest):
         return cls(include, exclude=exclude)._get(**kwargs)
 
 
+@final
+class PostTranslational(AllInteractions):
+    """
+    Request all post-translational interactions from [OmniPath]_ .
+
+    Parameters
+    ----------
+    exclude
+        Post-translational interaction datasets to exclude. If `None`, don't exclude anything.
+    """
+
+    def __init__(self, exclude: Optional[Datasets_t] = None):
+        super().__init__(
+            include=[
+                InteractionDataset.OMNIPATH,
+                InteractionDataset.PATHWAY_EXTRA,
+                InteractionDataset.KINASE_EXTRA,
+                InteractionDataset.LIGREC_EXTRA,
+            ],
+            exclude=exclude,
+        )
+
+    @classmethod
+    @d.dedent
+    def get(
+        cls,
+        exclude: Optional[Datasets_t] = None,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """
+        %(get.full_desc)s
+
+        The available interaction datasets are :class:`omnipath.constants.InteractionDataset`.
+
+        Parameters
+        ----------
+        exclude
+            Post-translational interaction datasets to exclude. If `None`, don't exclude anything.
+        %(get.parameters)s
+
+        Returns
+        -------
+        %(get.returns)s
+        """
+        return cls(exclude=exclude).get(**kwargs)
+
+
 __all__ = [
     Dorothea,
     OmniPath,
@@ -391,4 +436,5 @@ __all__ = [
     TFmiRNA,
     miRNA,
     lncRNAmRNA,
+    PostTranslational,
 ]
