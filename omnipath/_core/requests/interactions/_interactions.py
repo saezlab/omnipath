@@ -176,8 +176,8 @@ class LigRecExtra(CommonParamFilter):
     """
     Request interactions from the `ligrec extra` dataset.
 
-    Imports the `dataset <https://omnipathdb.org/interactions?datasets=ligrecextra>`__ which contains ligand-receptor
-    interactions without literature reference.
+    Imports the `dataset <https://omnipathdb.org/interactions?datasets=ligrecextra>`__
+    which contains ligand-receptor interactions without literature reference.
     """
 
     def __init__(self):
@@ -194,12 +194,14 @@ class PostTranslational(InteractionRequest):
     """
 
     def __init__(self):
-        super().__init__((
-            InteractionDataset.OMNIPATH,
-            InteractionDataset.PATHWAY_EXTRA,
-            InteractionDataset.KINASE_EXTRA,
-            InteractionDataset.LIGREC_EXTRA,
-        ))
+        super().__init__(
+            (
+                InteractionDataset.OMNIPATH,
+                InteractionDataset.PATHWAY_EXTRA,
+                InteractionDataset.KINASE_EXTRA,
+                InteractionDataset.LIGREC_EXTRA,
+            )
+        )
 
     @classmethod
     def _filter_params(cls, params: Dict[str, Any]) -> Dict[str, Any]:

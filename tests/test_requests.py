@@ -308,7 +308,7 @@ class TestComplex:
 class TestAnnotations:
     def test_too_many_proteins_requested(self):
         with pytest.raises(ValueError, match=r"Cannot download annotations for"):
-            Annotations.get(proteins = [f"foo_{i}" for i in range(601)])
+            Annotations.get(proteins=[f"foo_{i}" for i in range(601)])
 
     def test_params(self):
         params = Annotations.params()
@@ -321,7 +321,7 @@ class TestAnnotations:
         )
         df = pd.read_csv(StringIO(tsv_data.decode("utf-8")), sep="\t")
 
-        res = Annotations.get(proteins = ["bar"], genesymbols = True)
+        res = Annotations.get(proteins=["bar"], genesymbols=True)
 
         np.testing.assert_array_equal(res.index, df.index)
         np.testing.assert_array_equal(res.columns, df.columns)
@@ -336,7 +336,7 @@ class TestAnnotations:
         )
         df = pd.read_csv(StringIO(tsv_data.decode("utf-8")), sep="\t")
 
-        res = Annotations.get(proteins = ["foo", "foo"], organism="foobarbaz")
+        res = Annotations.get(proteins=["foo", "foo"], organism="foobarbaz")
 
         np.testing.assert_array_equal(res.index, df.index)
         np.testing.assert_array_equal(res.columns, df.columns)

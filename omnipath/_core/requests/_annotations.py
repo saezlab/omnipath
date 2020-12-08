@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union, Mapping, Iterable
+from typing import Any, Dict, Mapping
 
 import pandas as pd
 
@@ -62,7 +62,7 @@ class Annotations(OmnipathRequestABC):
         There might be also a few miRNAs annotated. A vast majority of protein complex annotations are inferred
         from the annotations of the members: if all members carry the same annotation the complex inherits.
         """
-
+        # fmt: off
         if not any(
             kw in kwargs
             for kw in ("proteins", "resources", "databases")
@@ -73,6 +73,7 @@ class Annotations(OmnipathRequestABC):
                 "due to its huge size (>1GB). Please query a set of proteins "
                 "or a few resources, depending on your interest."
             )
+        # fmt: on
 
         if "proteins" in kwargs:
 
@@ -82,10 +83,12 @@ class Annotations(OmnipathRequestABC):
             proteins = tuple(set(proteins))
 
             if len(proteins) > 600:
+                # fmt: off
                 raise ValueError(
                     "Cannot download annotations for "
                     "more than `600` proteins yet."
                 )
+                # fmt: on
 
             kwargs["proteins"] = proteins
 
