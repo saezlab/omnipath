@@ -308,7 +308,7 @@ class TestComplex:
 class TestAnnotations:
     def test_too_many_proteins_requested(self):
         with pytest.raises(ValueError, match=r"Cannot download annotations for"):
-            Annotations.get([f"foo_{i}" for i in range(601)])
+            Annotations.get(proteins = [f"foo_{i}" for i in range(601)])
 
     def test_params(self):
         params = Annotations.params()
