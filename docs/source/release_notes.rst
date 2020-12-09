@@ -6,6 +6,11 @@ Release Notes
 Version 1.0
 -----------
 
+1.0.3 :small:`2020-12-08`
+~~~~~~~~~~~~~~~~~~~~~~~~~
+- Add :class:`omnipath.interactions.PostTranslational`
+- Add possibility to download all :class:`omnipath.requests.Annotations`
+
 1.0.2 :small:`2020-11-29`
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 - Fix small bug when converting boolean values

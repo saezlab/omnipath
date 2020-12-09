@@ -39,7 +39,6 @@ setup(
     # description
     description=Path("README.rst").read_text("utf-8").splitlines()[2],
     long_description=Path("README.rst").read_text("utf-8"),
-    description_content_type="text/x-rst; charset=UTF-8",
     long_description_content_type="text/x-rst; charset=UTF-8",
     # links
     url="https://omnipathdb.org/",
@@ -166,7 +165,7 @@ setup(
     # package installation
     packages=find_packages(),
     zip_safe=False,
-    python_required=">=3.7",
+    python_requires=">=3.7",
     include_package_data=False,
     # dependency_links = deplinks
     install_requires=list(
@@ -177,10 +176,7 @@ setup(
     ),
     extras_require={
         "graph": ["networkx>=4.3.0"],
-        "tests": [
-            "tox>=3.20.1",
-            "requests_mock",
-        ],
+        "tests": ["tox>=3.20.1"],
         "docs": [
             line
             for line in (Path("docs") / "requirements.txt")

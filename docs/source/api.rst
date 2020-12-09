@@ -35,6 +35,7 @@ Interactions
     interactions.LigRecExtra
     interactions.OmniPath
     interactions.PathwayExtra
+    interactions.PostTranslational
     interactions.TFmiRNA
     interactions.TFtarget
     interactions.Transcriptional

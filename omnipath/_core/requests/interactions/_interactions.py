@@ -256,7 +256,7 @@ class TFtarget(InteractionRequest):
 @final
 class Transcriptional(InteractionRequest):
     """
-    Request all `TF-target` interactions of [OmniPath]_.
+    Request all `TF-target` interactions from [OmniPath]_.
 
     Imports the `dataset <https://omnipathdb.org/interactions?datasets=dorothea,tf_target>`__ which contains
     transcription factor-target protein coding gene interactions.
@@ -340,7 +340,6 @@ class OmniPath(InteractionRequest):
         super().__init__(InteractionDataset.OMNIPATH)
 
 
-@final
 @d.get_sections(base="all_ints", sections=["Parameters"])
 @d.dedent
 class AllInteractions(InteractionRequest):
@@ -375,7 +374,6 @@ class AllInteractions(InteractionRequest):
         return super()._filter_params(params)
 
     @classmethod
-    @final
     @d.dedent
     def get(
         cls,
@@ -403,6 +401,63 @@ class AllInteractions(InteractionRequest):
         return cls(include, exclude=exclude)._get(**kwargs)
 
 
+# ideally docrep would be possible, but the metaclass is not perfect and gets rid of the info
+@final
+class PostTranslational(AllInteractions):
+    """
+    Request all post-translational interactions from [OmniPath]_ .
+
+    Imports the `dataset <https://omnipathdb.org/interactions?datasets=omnipath,pathwayextra,kinaseextra,ligrecextra>`__
+    which contains post-transcriptional (i.e. protein-protein) interactions. This query requests the interactions from
+    the following datasets:
+
+        - :attr:`omnipath.constants.InteractionDataset.OMNIPATH`
+        - :attr:`omnipath.constants.InteractionDataset.PATHWAY_EXTRA`
+        - :attr:`omnipath.constants.InteractionDataset.KINASE_EXTRA`
+        - :attr:`omnipath.constants.InteractionDataset.LIGREC_EXTRA`
+
+    Parameters
+    ----------
+    exclude
+        Post-translational interaction datasets to exclude. If `None`, don't exclude anything.
+    """
+
+    def __init__(self, exclude: Optional[Datasets_t] = None):
+        super().__init__(
+            include=[
+                InteractionDataset.OMNIPATH,
+                InteractionDataset.PATHWAY_EXTRA,
+                InteractionDataset.KINASE_EXTRA,
+                InteractionDataset.LIGREC_EXTRA,
+            ],
+            exclude=exclude,
+        )
+
+    @classmethod
+    @d.dedent
+    def get(
+        cls,
+        exclude: Optional[Datasets_t] = None,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """
+        %(get.full_desc)s
+
+        The available interaction datasets are :class:`omnipath.constants.InteractionDataset`.
+
+        Parameters
+        ----------
+        exclude
+            Post-translational interaction datasets to exclude. If `None`, don't exclude anything.
+        %(get.parameters)s
+
+        Returns
+        -------
+        %(get.returns)s
+        """
+        return cls(exclude=exclude).get(**kwargs)
+
+
 __all__ = [
     Dorothea,
     OmniPath,
@@ -416,4 +471,5 @@ __all__ = [
     TFmiRNA,
     miRNA,
     lncRNAmRNA,
+    PostTranslational,
 ]
