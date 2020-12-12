@@ -424,9 +424,8 @@ class GraphLike(ABC):
             import networkx as nx
         except ImportError:
             raise ImportError(
-                "Unable to import `networkx`. Please install it as `pip install network`."
+                "Unable to import `networkx`. Please install it as `pip install networkx`."
             ) from None
-
         data = cls.get(**kwargs) if data is None else data
 
         if not isinstance(data, pd.DataFrame):
