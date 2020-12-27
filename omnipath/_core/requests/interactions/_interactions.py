@@ -185,30 +185,6 @@ class LigRecExtra(CommonParamFilter):
 
 
 @final
-class PostTranslational(InteractionRequest):
-    """
-    Request all post-translational interactions of [OmniPath]_.
-
-    Imports the `dataset <https://omnipathdb.org/interactions?datasets=omnipath,pathwayextra,kinaseextra,ligrecextra>`__ which contains
-    post-transcriptional (i.e. protein-protein) interactions.
-    """
-
-    def __init__(self):
-        super().__init__(
-            (
-                InteractionDataset.OMNIPATH,
-                InteractionDataset.PATHWAY_EXTRA,
-                InteractionDataset.KINASE_EXTRA,
-                InteractionDataset.LIGREC_EXTRA,
-            )
-        )
-
-    @classmethod
-    def _filter_params(cls, params: Dict[str, Any]) -> Dict[str, Any]:
-        return super()._filter_params(params)
-
-
-@final
 class Dorothea(InteractionRequest):
     """
     Request interactions from the `dorothea` dataset.
@@ -320,10 +296,6 @@ class OmniPath(InteractionRequest):
     This part of the interaction database was compiled in a similar way as it has been presented in [OmniPath16]_.
     """
 
-    @classmethod
-    def _filter_params(cls, params: Dict[str, Any]) -> Dict[str, Any]:
-        return super()._filter_params(params)
-
     __string__ = frozenset({"source", "target", "dip_url"})
     __logical__ = frozenset(
         {
@@ -338,6 +310,10 @@ class OmniPath(InteractionRequest):
 
     def __init__(self):
         super().__init__(InteractionDataset.OMNIPATH)
+
+    @classmethod
+    def _filter_params(cls, params: Dict[str, Any]) -> Dict[str, Any]:
+        return super()._filter_params(params)
 
 
 @d.get_sections(base="all_ints", sections=["Parameters"])
@@ -433,6 +409,10 @@ class PostTranslational(AllInteractions):
             exclude=exclude,
         )
 
+    def _inject_fields(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        # we don't need the type
+        return super(InteractionRequest, self)._inject_fields(params)
+
     @classmethod
     @d.dedent
     def get(
@@ -455,7 +435,7 @@ class PostTranslational(AllInteractions):
         -------
         %(get.returns)s
         """
-        return cls(exclude=exclude).get(**kwargs)
+        return cls(exclude=exclude)._get(**kwargs)
 
 
 __all__ = [
@@ -467,7 +447,6 @@ __all__ = [
     PathwayExtra,
     AllInteractions,
     Transcriptional,
-    PostTranslational,
     TFmiRNA,
     miRNA,
     lncRNAmRNA,

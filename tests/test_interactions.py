@@ -22,6 +22,7 @@ from omnipath._core.requests.interactions._interactions import (
     PathwayExtra,
     AllInteractions,
     Transcriptional,
+    PostTranslational,
     miRNA,
     lncRNAmRNA,
 )
@@ -81,6 +82,7 @@ class TestInteractions:
             Dorothea,
             TFtarget,
             OmniPath,
+            PostTranslational,
         ],
     )
     def test_resources(
@@ -108,6 +110,43 @@ class TestInteractions:
         ):
             AllInteractions.get(**{Key.ORGANISM.s: "foo"})
 
+    @pytest.mark.parametrize(
+        "interaction",
+        [
+            PathwayExtra,
+            KinaseExtra,
+            LigRecExtra,
+            miRNA,
+            TFmiRNA,
+            lncRNAmRNA,
+            Dorothea,
+            TFtarget,
+            OmniPath,
+            PostTranslational,
+            AllInteractions,
+        ],
+    )
+    def test_intercation_get(
+        self, cache_backup, interaction, interaction_resources: bytes, requests_mock
+    ):
+        url = urljoin(options.url, interaction._query_type.endpoint)
+        datasets = quote_plus(
+            ",".join(sorted(d.value for d in interaction()._datasets))
+        )
+        fields = "fields=curation_effort%2Creferences%2Csources"
+        if interaction is AllInteractions:
+            fields += "%2Ctype"
+
+        requests_mock.register_uri(
+            "GET",
+            f"{url}?datasets={datasets}&{fields}&format=tsv",
+            content=interaction_resources,
+        )
+
+        _ = interaction.get()
+
+        assert requests_mock.called_once
+
     @pytest.mark.parametrize("organisms", list(Organism))
     def test_valid_organism(
         self, cache_backup, organisms, requests_mock, interaction_resources
@@ -121,8 +160,8 @@ class TestInteractions:
             content=interaction_resources,
         )
 
-        AllInteractions.get(organism=organisms, format="tsv")
-        AllInteractions.get(organisms=organisms.value, format="tsv")
+        _ = AllInteractions.get(organism=organisms, format="tsv")
+        _ = AllInteractions.get(organisms=organisms.value, format="tsv")
         assert requests_mock.called_once
 
     def test_dorothea_params(self):
