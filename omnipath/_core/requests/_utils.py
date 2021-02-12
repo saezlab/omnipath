@@ -152,7 +152,8 @@ def _strip_resource_label(
     data: pd.Series, func: Optional[Callable] = None
 ) -> pd.Series:
     return _split_unique_join(
-        _split_unique_join(data.str.replace(r"[-\w]*:?(\d+)", r"\1")), func=func
+        _split_unique_join(data.str.replace(r"[-\w]*:?(\d+)", r"\1", regex=True)),
+        func=func,
     )
 
 
