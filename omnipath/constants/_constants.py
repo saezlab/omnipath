@@ -62,7 +62,7 @@ class FormatterMeta(EnumMeta, ABCMeta):  # noqa: D101
 
 
 class PrettyEnumMixin(ErrorFormatter, NoValue, metaclass=FormatterMeta):
-    """Enum mixin that that pretty prints when user uses invalid value."""
+    """Enum mixin that pretty prints when user uses invalid value."""
 
     @property
     def s(self) -> str:
