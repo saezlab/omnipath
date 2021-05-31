@@ -61,12 +61,12 @@ certain (not all) annotations of the proteins.
     :target: https://pypi.org/project/omnipath
     :alt: PyPI
 
-.. |CI| image:: https://img.shields.io/github/workflow/status/michalk8/omnipath/CI/master
-    :target: https://github.com/michalk8/omnipath/actions?query=workflow:CI
+.. |CI| image:: https://img.shields.io/github/workflow/status/saezlab/omnipath/CI/master
+    :target: https://github.com/saezlab/omnipath/actions?query=workflow:CI
     :alt: CI
 
-.. |Coverage| image:: https://codecov.io/gh/michalk8/omnipath/branch/master/graph/badge.svg?token=5A086KQA51
-    :target: https://codecov.io/gh/michalk8/omnipath
+.. |Coverage| image:: https://codecov.io/gh/saezlab/omnipath/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/saezlab/omnipath
     :alt: Coverage
 
 .. |Docs|  image:: https://img.shields.io/readthedocs/omnipath

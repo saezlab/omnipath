@@ -20,16 +20,16 @@ This package is a Python equivalent of an R package `OmnipathR`_ for accessing w
     :target: https://pypi.org/project/omnipath
     :alt: PyPI
 
-.. |CI| image:: https://img.shields.io/github/workflow/status/michalk8/omnipath/CI/master
-    :target: https://github.com/michalk8/omnipath/actions?query=workflow:CI
+.. |CI| image:: https://img.shields.io/github/workflow/status/saezlab/omnipath/CI/master
+    :target: https://github.com/saezlab/omnipath/actions?query=workflow:CI
     :alt: CI
 
 .. |Docs|  image:: https://img.shields.io/readthedocs/omnipath
     :target: https://omnipath.readthedocs.io/en/latest
     :alt: Documentation
 
-.. |Coverage| image:: https://codecov.io/gh/michalk8/omnipath/branch/master/graph/badge.svg?token=5A086KQA51
-    :target: https://codecov.io/gh/michalk8/omnipath
+.. |Coverage| image:: https://codecov.io/gh/saezlab/omnipath/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/saezlab/omnipath
     :alt: Coverage
 
 .. _Saezlab : https://saezlab.org/
