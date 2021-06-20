@@ -175,7 +175,7 @@ class TestDownloader:
 
         assert not requests_mock.called_once
         assert (
-            "Unable to get server version. Reason: `Autoload is disabled.`"
+            "Unable to get server version. Reason: `Autoloading is disabled."
             in caplog.text
         )
         assert version == UNKNOWN_SERVER_VERSION
