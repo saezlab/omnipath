@@ -38,9 +38,8 @@ class DEFAULT_OPTIONS:
     cache_dir: Path = Path.home() / ".cache" / "omnipathdb"
     mem_cache = None
     progress_bar: bool = True
-    autoload: bool = (
-        environ.get("OMNIPATH_AUTOLOAD", "") == ""
-    )  # this is done for the testing purposes
+    # for testing purposes
+    autoload: bool = environ.get("OMNIPATH_AUTOLOAD", "") == ""
     convert_dtypes: bool = True
 
 

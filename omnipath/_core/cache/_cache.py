@@ -100,7 +100,7 @@ class FileCache(Cache):
         return self._cache_dir
 
     def clear(self) -> None:
-        """Remove all files and the directory under :paramref:`path`."""
+        """Remove all files and the directory under :attr:`path`."""
         if self._cache_dir.is_dir():
             rmtree(self._cache_dir)
 

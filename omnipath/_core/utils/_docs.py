@@ -24,7 +24,7 @@ _interactions_datasets = """
     - :attr:`omnipath.constants.InteractionDataset.MIRNA_TARGET`
     - :attr:`omnipath.constants.InteractionDataset.LNCRNA_MRNA`"""
 _validate = """
-Validate the ``value`` for the :paramref:`param`.
+Validate the ``value`` for the :attr:`param`.
 
 Parameters
 ----------

@@ -11,11 +11,11 @@ from datetime import datetime
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-import os
+from pathlib import Path
 import sys
 
-sys.path.insert(0, os.path.abspath("_ext"))
-
+HERE = Path(__file__).parent
+sys.path.insert(0, str(HERE.parent.parent))
 import omnipath
 
 needs_sphinx = "3.0"
@@ -25,7 +25,6 @@ needs_sphinx = "3.0"
 project = "omnipath"
 author = omnipath.__author__
 copyright = f"{datetime.now():%Y}, {author}"
-github_repo = "https://github.com/saezlab/omnipath"
 
 # The full version, including alpha/beta/rc tags
 release = f"master ({omnipath.__version__})"
@@ -42,10 +41,8 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_autodoc_typehints",
     "sphinx.ext.intersphinx",
-    "sphinx_paramlinks",
     "sphinx.ext.autosummary",
     "sphinx_last_updated_by_git",
-    "edit_on_github",
     "enum_tools.autoenum",
 ]
 intersphinx_mapping = dict(

@@ -49,7 +49,6 @@ def _assert_dataframes_equal(
         emask = ~(pd.isna(e).values | pd.isnull(a).values)
         amask = ~(pd.isna(e).values | pd.isnull(a).values)
 
-        # print(f"Column `{col}`")
         np.testing.assert_array_equal(emask, amask)
         np.testing.assert_array_equal(e[emask], a[emask])
 

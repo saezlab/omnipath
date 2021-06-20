@@ -82,17 +82,17 @@ class Query(ErrorFormatter, Enum, metaclass=QueryMeta):  # noqa: D101
 
     @property
     def valid(self) -> Optional[FrozenSet[str]]:
-        """Return the set of valid values for :paramref:`param`."""
+        """Return the set of valid values for :attr:`param`."""
         return self._delegate.valid
 
     @property
     def annotation(self) -> type:
-        """Return type annotations for :paramref:`param`."""
+        """Return type annotations for :attr:`param`."""
         return self._delegate.annotation
 
     @property
     def doc(self) -> Optional[str]:
-        """Return the docstring for :paramref:`param`."""
+        """Return the docstring for :attr:`param`."""
         return self._delegate.doc
 
     def __call__(

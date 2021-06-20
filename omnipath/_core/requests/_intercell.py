@@ -45,7 +45,7 @@ class Intercell(OrganismGenesymbolsRemover):
         Parameters
         ----------
         generic_categories
-            For valid options, see :paramref:`generic_categories`.
+            For valid options, see :attr:`generic_categories`.
 
         Returns
         -------

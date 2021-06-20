@@ -90,7 +90,7 @@ class ServerValidatorMeta(EnumMeta, ABCMeta):  # noqa: D101
 
         def __call__(self, needle: Optional[Set[str]]) -> Optional[Set[str]]:
             """
-            Check whether ``needle`` is a valid value for :paramref:`_param`.
+            Check whether ``needle`` is a valid value for :attr:`_param`.
 
             Parameters
             ----------
@@ -100,12 +100,12 @@ class ServerValidatorMeta(EnumMeta, ABCMeta):  # noqa: D101
             Returns
             -------
                 `None` if the ``needle`` was `None`, otherwise the ``needle`` as a `str` set,
-                optionally intersected with :paramref:`_haystack` if it is not `None`.
+                optionally intersected with :attr:`_haystack` if it is not `None`.
 
             Raises
             ------
             ValueError
-                If :paramref:`_haystack` is not `None` and no valid values were found.
+                If :attr:`haystack` is not `None` and no valid values were found.
             """
             if needle is None:
                 return None

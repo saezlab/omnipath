@@ -29,7 +29,7 @@ def _pretty_raise_enum(cls: EnumMeta, fun: Callable) -> Callable:
 
 
 class NoValue(Enum):
-    """Enumeration which hides its :paramref:`value`."""
+    """Enumeration which hides its :attr:`value`."""
 
     def __repr__(self):
         return f"<{self.__class__.__name__}.{self.name}>"
@@ -66,7 +66,7 @@ class PrettyEnumMixin(ErrorFormatter, NoValue, metaclass=FormatterMeta):
 
     @property
     def s(self) -> str:
-        """Return the :paramref:`value` as :class:`str`."""
+        """Return the :attr:`value` as :class:`str`."""
         return str(self.value)
 
 

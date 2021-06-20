@@ -26,6 +26,18 @@ from omnipath._core.downloader._downloader import Downloader
 import omnipath as op
 
 
+# removes overly verbose logging errors for rpy2
+# see: https://github.com/pytest-dev/pytest/issues/5502#issuecomment-647157873
+def pytest_sessionfinish(session, exitstatus):
+    import logging
+
+    loggers = [logging.getLogger()] + list(logging.Logger.manager.loggerDict.values())
+    for logger in loggers:
+        handlers = getattr(logger, "handlers", [])
+        for handler in handlers:
+            logger.removeHandler(handler)
+
+
 def pytest_addoption(parser):
     parser.addoption(
         "--test-server",
@@ -224,13 +236,13 @@ def _can_import_omnipathR() -> Optional["rpy2.robjects.packages.Package"]:  # no
         try:
             assert version.parse(get_version(rpy2.__name__)) >= version.parse("3.3.0")
             mod = importr("OmnipathR")
-            logging.error("Succesfully loaded `OmnipathR`")
+            logging.info("Succesfully loaded `OmnipathR`")
             return mod
         except (PackageNotInstalledError, AssertionError) as err:
-            logging.error(f"Unable to import `OmnipathR`. Reason: `{err}`.")
+            logging.error(f"Unable to import `OmnipathR`. Reason: `{err}`")
 
     except ImportError as err:
-        logging.error(f"Unable to import `rpy2`. Reason: `{err}`.")
+        logging.error(f"Unable to import `rpy2`. Reason: `{err}`")
 
     return None
 

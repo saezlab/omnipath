@@ -96,7 +96,7 @@ class Downloader:
         cache
             Whether to save the files to the cache or not.
         is_final
-            Whether ``url`` is final or should be prefixed with :paramref:`_options.url`.
+            Whether ``url`` is final or should be prefixed with :attr:`_options.url`.
 
         Returns
         -------
@@ -193,7 +193,10 @@ def _get_server_version(options: Options) -> str:
 
     try:
         if not options.autoload:
-            raise ValueError("Autoload is disabled.")
+            raise ValueError(
+                "Autoloading is disabled. You can enable it by setting "
+                "`omnipath.options.autoload = True`."
+            )
 
         with Options.from_options(
             options,
