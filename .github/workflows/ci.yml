@@ -43,7 +43,7 @@ jobs:
                     # TODO(michalk8):
                     # server tests crash after 1st pytest command in tox (exit status 2)
                     # only happens when `rpy2` and `OmnipathR` is installed, and I am unable to find a reason/fix
-                    test_server: [false]
+                    test_server: false
         env:
             OS: ${{ matrix.os }}
             PYTHON: ${{ matrix.python }}
