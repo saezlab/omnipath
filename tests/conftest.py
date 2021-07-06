@@ -236,13 +236,15 @@ def _can_import_omnipathR() -> Optional["rpy2.robjects.packages.Package"]:  # no
         try:
             assert version.parse(get_version(rpy2.__name__)) >= version.parse("3.3.0")
             mod = importr("OmnipathR")
-            logging.info("Succesfully loaded `OmnipathR`")
+            logging.info("Successfully loaded `OmnipathR`")
             return mod
         except (PackageNotInstalledError, AssertionError) as err:
             logging.error(f"Unable to import `OmnipathR`. Reason: `{err}`")
 
     except ImportError as err:
         logging.error(f"Unable to import `rpy2`. Reason: `{err}`")
+    except Exception as err:
+        logging.error(f"Unknown exception when trying to import `OmnipathR`: `{err}`")
 
     return None
 
