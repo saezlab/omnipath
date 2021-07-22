@@ -22,7 +22,7 @@ except ImportError:
     __author__ = "Michal Klein, Dénes Türei"
     __maintainer__ = "Michal Klein, Dénes Türei"
     __email__ = "turei.denes@gmail.com"
-    __version__ = "1.0.3"
+    __version__ = "1.0.4"
 
 
 setup(
@@ -167,7 +167,6 @@ setup(
     zip_safe=False,
     python_requires=">=3.7",
     include_package_data=False,
-    # dependency_links = deplinks
     install_requires=list(
         map(
             str.strip,

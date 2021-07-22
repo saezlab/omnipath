@@ -1,4 +1,4 @@
-from typing import Union, ClassVar, NoReturn, Optional
+from typing import Any, Union, ClassVar, NoReturn, Optional
 from pathlib import Path
 from urllib.parse import urlparse
 import configparser
@@ -6,7 +6,7 @@ import configparser
 import attr
 
 from omnipath.constants import License
-from omnipath._core.cache._cache import Cache, FileCache, MemoryCache
+from omnipath._core.cache._cache import Cache, FileCache, NoopCache, MemoryCache
 from omnipath.constants._pkg_constants import DEFAULT_OPTIONS
 
 
@@ -40,6 +40,8 @@ def _cache_converter(value: Optional[Union[str, Path, Cache]]) -> Cache:
         return value
 
     if value is None:
+        return NoopCache()
+    if value == "memory":
         return MemoryCache()
 
     return FileCache(value)
@@ -59,7 +61,12 @@ class Options:
     password
         Password used when performing requests.
     cache
-        Type of a cache. If `None`, cache files to memory. If a :class:`str`, persist files into a directory.
+        Type of a cache. Valid options are:
+
+            - `None`: do not save anything into a cache.
+            - `'memory'`: cache files into the memory.
+            - :class:`str`: persist files into a directory.
+
     autoload
         Whether to contact the server at ``url`` during import to get the server version and the most up-to-date
         query parameters and their valid options.
@@ -209,7 +216,7 @@ class Options:
         )
 
     @classmethod
-    def from_options(cls, options: "Options", **kwargs) -> "Options":
+    def from_options(cls, options: "Options", **kwargs: Any) -> "Options":
         """
         Create new options from previous options.
 
@@ -235,17 +242,17 @@ class Options:
 
     def write(self, section: Optional[str] = None) -> NoReturn:
         """Write the current options to a configuration file."""
-        self.config_path.parent.mkdir(exist_ok=True)
+        self.config_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(self.config_path, "w") as fout:
             self._create_config(section).write(fout)
 
         return self
 
-    def __enter__(self):
+    def __enter__(self) -> "Options":
         return self.from_options(self)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         pass
 
 

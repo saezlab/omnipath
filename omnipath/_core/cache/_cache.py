@@ -5,9 +5,19 @@ from pathlib import Path
 import os
 import pickle
 
+import pandas as pd
+
+
+def _is_empty(data: Optional[pd.DataFrame]) -> bool:
+    return data is None or (isinstance(data, pd.DataFrame) and not len(data))
+
 
 class Cache(ABC):
-    """Abstract class which defines the caching interface."""
+    """
+    Abstract class which defines the caching interface.
+
+    Empty values (`None` or an empty :class:`pandas.DataFrame`) will not be saved in the cache.
+    """
 
     @abstractmethod
     def __getitem__(self, key: str) -> Optional[Any]:
@@ -67,7 +77,9 @@ class FileCache(Cache):
 
         return (self._cache_dir / key).is_file()
 
-    def __setitem__(self, key: str, value: Any):
+    def __setitem__(self, key: str, value: Any) -> None:
+        if _is_empty(value):
+            return
         self._cache_dir.mkdir(parents=True, exist_ok=True)
 
         fname = str(key)
@@ -112,9 +124,14 @@ class MemoryCache(dict, Cache):
     """Cache which persists the data into the memory."""
 
     @property
-    def path(self) -> None:
-        """Return `None`."""
-        return None
+    def path(self) -> Optional[str]:
+        """Return `'memory'`."""
+        return "memory"
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        if _is_empty(value):
+            return
+        return super().__setitem__(key, value)
 
     def __str__(self) -> str:
         return f"<{self.__class__.__name__}[size={len(self)}]>"
@@ -128,6 +145,21 @@ class MemoryCache(dict, Cache):
     def copy(self) -> "MemoryCache":
         """Return self."""
         return self
+
+
+class NoopCache(MemoryCache):
+    """Cache which doesn't save anything."""
+
+    @property
+    def path(self) -> Optional[str]:
+        """Return `None`."""
+        return None
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        pass
+
+    def __str__(self):
+        return f"<{self.__class__.__name__}>"
 
 
 def clear_cache() -> None:

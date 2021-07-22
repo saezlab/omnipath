@@ -1,10 +1,13 @@
 from copy import copy, deepcopy
+from typing import Optional
 from pathlib import Path
 
 import pytest
 
+import pandas as pd
+
 from omnipath import options, clear_cache
-from omnipath._core.cache._cache import FileCache, MemoryCache
+from omnipath._core.cache._cache import FileCache, NoopCache, MemoryCache
 
 
 def test_clear_cache_high_lvl(cache_backup):
@@ -26,7 +29,7 @@ class TestMemoryCache:
 
     def test_path_is_None(self):
         mc = MemoryCache()
-        assert mc.path is None
+        assert mc.path == "memory"
 
     def test_copy_does_nothing(self):
         mc = MemoryCache()
@@ -50,6 +53,15 @@ class TestMemoryCache:
 
         mc.clear()
 
+        assert len(mc) == 0
+
+    @pytest.mark.parametrize("val", [None, pd.DataFrame()])
+    def test_add_empty_value(self, val: Optional[pd.DataFrame]):
+        mc = MemoryCache()
+
+        mc["foo"] = val
+
+        assert "foo" not in mc
         assert len(mc) == 0
 
 
@@ -97,3 +109,22 @@ class TestPickleCache:
 
         assert len(fc) == 0
         assert not Path(tmpdir).exists()
+
+    @pytest.mark.parametrize("val", [None, pd.DataFrame()])
+    def test_add_empty_value(self, tmpdir, val: Optional[pd.DataFrame]):
+        fc = FileCache(Path(tmpdir))
+
+        fc["foo"] = val
+
+        assert "foo" not in fc
+        assert len(fc) == 0
+
+
+class TestNoopCache:
+    def test_add_value(self):
+        nc = NoopCache()
+        nc["foo"] = 42
+
+        assert nc.path is None
+        assert "foo" not in nc
+        assert len(nc) == 0

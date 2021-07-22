@@ -36,7 +36,6 @@ class DEFAULT_OPTIONS:
     timeout: int = 600
     chunk_size: int = 8196
     cache_dir: Path = Path.home() / ".cache" / "omnipathdb"
-    mem_cache = None
     progress_bar: bool = True
     # for testing purposes
     autoload: bool = environ.get("OMNIPATH_AUTOLOAD", "") == ""

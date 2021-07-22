@@ -50,7 +50,7 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="function")
 def options() -> "Options":
     opt = Options.from_config()
-    opt.cache = None
+    opt.cache = "memory"
     opt.progress_bar = False
     return opt
 

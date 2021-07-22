@@ -3,7 +3,7 @@ docrep>=0.3.1
 enum_tools>=0.6.1
 inflect>=4.1.0
 packaging
-pandas>=1.1.4
+pandas>=1.2.0
 requests>=2.24.0
 tqdm>=4.51.0
 typing_extensions>=3.7.4.3
