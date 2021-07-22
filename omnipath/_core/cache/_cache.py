@@ -124,9 +124,9 @@ class MemoryCache(dict, Cache):
     """Cache which persists the data into the memory."""
 
     @property
-    def path(self) -> None:
-        """Return `None`."""
-        return None
+    def path(self) -> Optional[str]:
+        """Return `'memory'`."""
+        return "memory"
 
     def __setitem__(self, key: str, value: Any) -> None:
         if _is_empty(value):
@@ -145,6 +145,21 @@ class MemoryCache(dict, Cache):
     def copy(self) -> "MemoryCache":
         """Return self."""
         return self
+
+
+class NoopCache(MemoryCache):
+    """Cache which doesn't save anything."""
+
+    @property
+    def path(self) -> Optional[str]:
+        """Return `None`."""
+        return None
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        pass
+
+    def __str__(self):
+        return f"<{self.__class__.__name__}>"
 
 
 def clear_cache() -> None:
