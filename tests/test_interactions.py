@@ -156,13 +156,15 @@ class TestInteractions:
         requests_mock.register_uri(
             "GET",
             f"{url}?datasets={datasets}&fields=curation_effort%2Creferences%2Csources%2Ctype&"
-            f"format=tsv&organisms={organisms.code}",
+            f"format=json&organisms={organisms.code}",
             content=interaction_resources,
         )
 
-        _ = AllInteractions.get(organism=organisms, format="tsv")
-        _ = AllInteractions.get(organisms=organisms.value, format="tsv")
+        x = AllInteractions.get(organism=organisms, format="json")
+        y = AllInteractions.get(organisms=organisms.value, format="json")
+
         assert requests_mock.called_once
+        pd.testing.assert_frame_equal(x, y)
 
     def test_dorothea_params(self):
         params = Dorothea.params()

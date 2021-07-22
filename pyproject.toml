@@ -2,10 +2,6 @@
 requires = ['setuptools', 'setuptools_scm', 'wheel']
 build-backend = 'setuptools.build_meta'
 
-[dev-dependencies]
-black = { version = "^19.10b0", python = "^3.6" }
-pytest = { version = "^5.3", python = "^3.6" }
-
 [tool.black]
 line-length = 88
 target-version = ['py38']
@@ -38,7 +34,7 @@ multi_line_output = 3
 include_trailing_comma = true
 use_parentheses = true
 known_num="numpy,pandas"
-sections = "FUTURE,STDLIB,THIRDPARTY,NUM,,FIRSTPARTY,LOCALFOLDER"
+sections = "FUTURE,STDLIB,THIRDPARTY,NUM,FIRSTPARTY,LOCALFOLDER"
 no_lines_before="LOCALFOLDER"
 balanced_wrapping = true
 force_grid_wrap = 0

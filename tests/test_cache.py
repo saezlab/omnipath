@@ -1,7 +1,10 @@
 from copy import copy, deepcopy
+from typing import Optional
 from pathlib import Path
 
 import pytest
+
+import pandas as pd
 
 from omnipath import options, clear_cache
 from omnipath._core.cache._cache import FileCache, MemoryCache
@@ -52,6 +55,15 @@ class TestMemoryCache:
 
         assert len(mc) == 0
 
+    @pytest.mark.parametrize("val", [None, pd.DataFrame()])
+    def test_add_empty_value(self, val: Optional[pd.DataFrame]):
+        mc = MemoryCache()
+
+        mc["foo"] = val
+
+        assert "foo" not in mc
+        assert len(mc) == 0
+
 
 class TestPickleCache:
     def test_invalid_path(self):
@@ -97,3 +109,12 @@ class TestPickleCache:
 
         assert len(fc) == 0
         assert not Path(tmpdir).exists()
+
+    @pytest.mark.parametrize("val", [None, pd.DataFrame()])
+    def test_add_empty_value(self, tmpdir, val: Optional[pd.DataFrame]):
+        fc = FileCache(Path(tmpdir))
+
+        fc["foo"] = val
+
+        assert "foo" not in fc
+        assert len(fc) == 0
