@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from copy import copy
 from shutil import rmtree
 from typing import Any, Union, Optional
 from pathlib import Path
@@ -121,7 +122,11 @@ class FileCache(Cache):
 
 
 class MemoryCache(dict, Cache):
-    """Cache which persists the data into the memory."""
+    """
+    Cache which persists the data into the memory.
+
+    Objects stored in the cache are copied using :func:`copy.copy``.
+    """
 
     @property
     def path(self) -> Optional[str]:
@@ -131,7 +136,8 @@ class MemoryCache(dict, Cache):
     def __setitem__(self, key: str, value: Any) -> None:
         if _is_empty(value):
             return
-        return super().__setitem__(key, value)
+        # the value is usually a dataframe (copy for safety)
+        return super().__setitem__(key, copy(value))
 
     def __str__(self) -> str:
         return f"<{self.__class__.__name__}[size={len(self)}]>"
