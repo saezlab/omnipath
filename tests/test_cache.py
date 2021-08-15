@@ -49,11 +49,21 @@ class TestMemoryCache:
         mc["foo"] = sentinel
 
         assert len(mc) == 1
-        assert mc["foo"] is sentinel
+        assert mc["foo"] is not sentinel  # copy was made
 
         mc.clear()
 
         assert len(mc) == 0
+
+    def test_dataframe_modification(self):
+        mc = MemoryCache()
+        df = pd.DataFrame({"foo": [1, 2], "bar": [3, 4]})
+
+        mc["baz"] = df
+        _ = df.pop("foo")
+
+        assert "foo" in mc["baz"]
+        assert "bar" in mc["baz"]
 
     @pytest.mark.parametrize("val", [None, pd.DataFrame()])
     def test_add_empty_value(self, val: Optional[pd.DataFrame]):

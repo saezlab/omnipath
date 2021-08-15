@@ -1,6 +1,5 @@
 attrs>=20.2.0
 docrep>=0.3.1
-enum_tools>=0.6.1
 inflect>=4.1.0
 packaging
 pandas>=1.2.0

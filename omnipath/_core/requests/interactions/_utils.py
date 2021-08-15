@@ -38,7 +38,9 @@ def _swap_undirected(df: pd.DataFrame) -> pd.DataFrame:
         ]
 
     return pd.concat(
-        [directed, undirected, undirected_swapped], axis=0, ignore_index=True
+        [directed, undirected, undirected_swapped],
+        axis=0,
+        ignore_index=True,
     )
 
 
@@ -111,13 +113,13 @@ def import_intercell_network(
 
     # fmt: off
     intracell = ['intracellular_intercellular_related', 'intracellular']
-    transmitters = transmitters.loc[~transmitters["parent"].isin(intracell), :]
+    transmitters = transmitters.loc[~transmitters["parent"].isin(intracell), :].copy()
     transmitters.rename(columns={"source": "category_source"}, inplace=True)
     # this makes it 3x as fast during groupby, since all of these are categories
     # it's mostly because groupby needs observed=True + using string object (numpy) vs "string"
     transmitters[["category", "parent", "database"]] = transmitters[["category", "parent", "database"]].astype(str)
 
-    receivers = receivers.loc[~receivers["parent"].isin(intracell), :]
+    receivers = receivers.loc[~receivers["parent"].isin(intracell), :].copy()
     receivers.rename(columns={"source": "category_source"}, inplace=True)
     receivers[["category", "parent", "database"]] = receivers[["category", "parent", "database"]].astype(str)
 

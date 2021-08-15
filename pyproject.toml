@@ -40,4 +40,4 @@ balanced_wrapping = true
 force_grid_wrap = 0
 length_sort = "1"
 indent = "    "
-skip_glob="docs/source/conf.py"
+skip_glob = "docs/source/conf.py"

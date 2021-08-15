@@ -3,11 +3,6 @@ from enum import Enum, EnumMeta, unique
 from typing import Any, Callable
 from functools import wraps
 
-from enum_tools import document_enum
-import enum_tools.documentation as documentation
-
-documentation.INTERACTIVE = True
-
 
 def _pretty_raise_enum(cls: EnumMeta, fun: Callable) -> Callable:
     @wraps(fun)
@@ -71,20 +66,23 @@ class PrettyEnumMixin(ErrorFormatter, NoValue, metaclass=FormatterMeta):
 
 
 @unique
-@document_enum
 class License(PrettyEnumMixin):
     """License types."""
 
-    ACADEMIC = "academic"  # doc: Academic license.
-    COMMERCIAL = "commercial"  # doc: Commercial license.
-    NON_PROFIT = "non_profit"  # doc: Non-profit license.
-    FOR_PROFIT = "for_profit"  # doc: For-profit license.
-    IGNORE = "ignore"  # doc: Ignore the license type.
+    ACADEMIC = "academic"  #: Academic license.
+    COMMERCIAL = "commercial"  #: Commercial license.
+    NON_PROFIT = "non_profit"  #: Non-profit license.
+    FOR_PROFIT = "for_profit"  #: For-profit license.
+    IGNORE = "ignore"  #: Ignore the license type.
 
 
 @unique
 class InteractionDataset(PrettyEnumMixin):
-    """Available interaction datasets in [OmniPath]_."""
+    """
+    Available interaction datasets in [OmniPath]_.
+
+    See :mod:`omnipath.interactions` for more information.
+    """
 
     DOROTHEA = "dorothea"
     KINASE_EXTRA = "kinaseextra"
@@ -99,13 +97,12 @@ class InteractionDataset(PrettyEnumMixin):
 
 
 @unique
-@document_enum
 class Organism(PrettyEnumMixin):
     """Organism types."""
 
-    HUMAN = "human"  # doc: NCIB taxonomy id: 9606.
-    MOUSE = "mouse"  # doc: NCIB taxonomy id: 10090.
-    RAT = "rat"  # doc: NCIB taxonomy id: 10116.
+    HUMAN = "human"  #: NCIB taxonomy id ``9606``.
+    MOUSE = "mouse"  #: NCIB taxonomy id ``10090``.
+    RAT = "rat"  #: NCIB taxonomy id ``10116``.
 
     def __new__(cls, value: str):  # noqa: D102
         obj = object.__new__(cls)
@@ -114,7 +111,7 @@ class Organism(PrettyEnumMixin):
 
     @property
     def code(self) -> int:
-        """Return the code of this organism."""
+        """Return the code for this organism."""
         return self._code
 
 
