@@ -1,4 +1,4 @@
-|PyPI| |CI| |Docs| |Coverage|
+|PyPI| |Downloads| |CI| |Docs| |Coverage|
 
 Python client for the OmniPath web service
 ==========================================
@@ -60,6 +60,10 @@ certain (not all) annotations of the proteins.
 .. |PyPI| image:: https://img.shields.io/pypi/v/omnipath.svg
     :target: https://pypi.org/project/omnipath
     :alt: PyPI
+
+.. |Downloads| image:: https://pepy.tech/badge/omnipath
+    :target: https://pepy.tech/project/omnipath
+    :alt: Downloads
 
 .. |CI| image:: https://img.shields.io/github/workflow/status/saezlab/omnipath/CI/master
     :target: https://github.com/saezlab/omnipath/actions?query=workflow:CI
