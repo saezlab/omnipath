@@ -1,4 +1,4 @@
-|PyPI| |CI| |Docs| |Coverage|
+|PyPI| |Downloads| |CI| |Docs| |Coverage|
 
 OmniPath
 ========
@@ -19,6 +19,10 @@ This package is a Python equivalent of an R package `OmnipathR`_ for accessing w
 .. |PyPI| image:: https://img.shields.io/pypi/v/omnipath.svg
     :target: https://pypi.org/project/omnipath
     :alt: PyPI
+
+.. |Downloads| image:: https://pepy.tech/badge/omnipath
+    :target: https://pepy.tech/project/omnipath
+    :alt: Downloads
 
 .. |CI| image:: https://img.shields.io/github/workflow/status/saezlab/omnipath/CI/master
     :target: https://github.com/saezlab/omnipath/actions?query=workflow:CI

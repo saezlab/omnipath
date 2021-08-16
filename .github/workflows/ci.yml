@@ -11,23 +11,7 @@ on:
         -   master
 
 jobs:
-    init:
-        runs-on: ubuntu-latest
-        outputs:
-            skip: ${{ steps.ci-skip-step.outputs.ci-skip }}
-        steps:
-        -   uses: actions/checkout@v2
-            with:
-                fetch-depth: 0
-        -   id: ci-skip-step
-            uses: mstachniuk/ci-skip@master
-            with:
-                commit-filter: '[ci skip];[ci-skip];[skip ci];[skip-ci]'
-                commit-filter-separator: ;
-
     build:
-        needs: init
-        if: ${{ needs.init.outputs.skip == 'false' }}
         runs-on: ${{ matrix.os }}
         timeout-minutes: 10
         strategy:
@@ -52,10 +36,6 @@ jobs:
         -   uses: actions/checkout@v2
             with:
                 fetch-depth: 0
-        -   uses: mstachniuk/ci-skip@v1
-            with:
-                fail-fast: true
-                exit-code: 0
         -   name: Set up Python ${{ matrix.python }}
             uses: actions/setup-python@v2
             with:
@@ -93,19 +73,19 @@ jobs:
                 sudo Rscript --vanilla -e "if (!(requireNamespace('BiocManager', quietly=TRUE))) { install.packages(c('BiocManager', 'curl'), repos='https://cloud.r-project.org/') }; BiocManager::install('OmnipathR')"
                 Rscript --vanilla -e "packageVersion('OmnipathR')"
 
-        -   name: Linting
+        -   name: Lint
             run: |
                 tox -e lint
-        -   name: Testing
-            run: |
-                tox
+
+        -   name: Test
             env:
                 PLATFORM: ${{ matrix.platform }}
+            run: |
+                tox -vv
 
         -   name: Upload coverage to Codecov
             if: success()
             env:
-                CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
                 CODECOV_NAME: ${{ matrix.python }}-${{ matrix.os }}
             run: |
                 codecov --no-color --required --flags unittests
@@ -119,7 +99,7 @@ jobs:
             with:
                 fetch-depth: 0
 
-        -   name: Install pypa/build
+        -   name: Install dependencies
             run: pip install build
         -   name: Build a binary wheel and a source tarball
             run: python -m build --sdist --wheel --outdir dist/
