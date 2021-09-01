@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from pandas.testing import assert_frame_equal
 import pandas as pd
 
 from omnipath import options, clear_cache
@@ -73,6 +74,14 @@ class TestMemoryCache:
 
         assert "foo" not in mc
         assert len(mc) == 0
+
+    def test_returns_copy(self):
+        mc = MemoryCache()
+        data = pd.DataFrame({"x": [0, 1]})
+        mc["foo"] = data
+
+        assert mc["foo"] is not mc["foo"]
+        assert_frame_equal(mc["foo"], data)
 
 
 class TestPickleCache:

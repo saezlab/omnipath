@@ -139,6 +139,9 @@ class MemoryCache(dict, Cache):
         # the value is usually a dataframe (copy for safety)
         return super().__setitem__(key, copy(value))
 
+    def __getitem__(self, key: str) -> Any:
+        return copy(super().__getitem__(key))
+
     def __str__(self) -> str:
         return f"<{self.__class__.__name__}[size={len(self)}]>"
 

@@ -99,7 +99,7 @@ class TestDownloader:
         res2 = downloader.maybe_download(csv_url, callback=pd.read_csv)
 
         assert res1 is not res2
-        assert res2 is next(iter(downloader._options.cache.values()))  # a copy in cache
+        assert len(downloader._options.cache) == 1
         assert requests_mock.called_once
         np.testing.assert_array_equal(res1.index, csv_df.index)
         np.testing.assert_array_equal(res1.columns, csv_df.columns)
@@ -110,6 +110,7 @@ class TestDownloader:
 
         assert res1 is not res2
         assert len(requests_mock.request_history) == 2
+        assert len(downloader._options.cache) == 2
         np.testing.assert_array_equal(res1.index, csv_df.index)
         np.testing.assert_array_equal(res1.columns, csv_df.columns)
         np.testing.assert_array_equal(res1.values, csv_df.values)
