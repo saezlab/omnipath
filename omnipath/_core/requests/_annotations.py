@@ -7,6 +7,7 @@ from omnipath._core.query import QueryType
 from omnipath._core.utils._docs import d
 from omnipath._core.requests._request import OmnipathRequestABC
 from omnipath.constants._pkg_constants import Key, final
+from omnipath._misc import dtypes
 
 _MAX_N_PROTS = 600
 
@@ -163,7 +164,7 @@ class Annotations(OmnipathRequestABC):
                 for resource in df.source.unique()
             )
 
-        return (
+        return dtypes.auto_dtype(
             df.
             set_index(['record_id', 'uniprot', 'genesymbol', 'entity_type', 'source', 'label']).
             unstack('label').
