@@ -152,21 +152,20 @@ class Annotations(OmnipathRequestABC):
             resource.
         """
 
-        df.label.replace({'source': 'source_'}, inplace = True)
-
         if df.source.nunique() > 1:
 
             return dict(
                 (
                     resource,
-                    cls.pivot_annotations(df[df.source == resource].copy())
+                    cls.pivot_annotations(df[df.source == resource])
                 )
                 for resource in df.source.unique()
             )
 
         return dtypes.auto_dtype(
             df.
-            set_index(['record_id', 'uniprot', 'genesymbol', 'entity_type', 'source', 'label']).
+            drop('source', axis = 1).
+            set_index(['record_id', 'uniprot', 'genesymbol', 'entity_type', 'label']).
             unstack('label').
             droplevel(axis = 1, level = 0).
             reset_index().
