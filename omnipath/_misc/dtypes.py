@@ -3,6 +3,7 @@ from typing import Union, Iterable
 import pandas as pd
 import numpy as np
 
+__all__ = ['auto_dtype']
 
 TRUE = frozenset(('true', 't', 'yes', 'y'))
 FALSE = frozenset(('false', 'f', 'no', 'n'))
@@ -165,5 +166,3 @@ def _string_to_bool(data: Union[pd.Series, Iterable]) -> pd.Series:
         return pd.Series(i.lower() in TRUE for i in data)
 
     return pd.Series(data)
-
-__all__ = [auto_dtype]
