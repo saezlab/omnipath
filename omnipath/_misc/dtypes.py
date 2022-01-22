@@ -13,7 +13,8 @@ NA = frozenset((
     pd.NA, pd.NaT, np.NAN, np.nan
 ))
 INT = ('int64', 'uint64')
-ALL = INT + ('float64', 'string')
+NUM = INT + ('float64',)
+ALL = NUM + ('string',)
 
 
 def auto_dtype(
@@ -106,6 +107,13 @@ def _auto_dtype_series(
     data = pd.Series(data)
 
     for t in ALL:
+
+        if (
+            (data.dtype in NUM and t in NUM) or
+            (t == 'string' and data.dtype != 'object')
+        ):
+
+            continue
 
         try:
 
