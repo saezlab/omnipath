@@ -3,11 +3,11 @@ import logging
 
 import pandas as pd
 
+from omnipath._misc import dtypes
 from omnipath._core.query import QueryType
 from omnipath._core.utils._docs import d
 from omnipath._core.requests._request import OmnipathRequestABC
 from omnipath.constants._pkg_constants import Key, final
-from omnipath._misc import dtypes
 
 _MAX_N_PROTS = 600
 
@@ -133,9 +133,14 @@ class Annotations(OmnipathRequestABC):
 
         return df
 
-    @staticmethod
-    def pivot_annotations(df: pd.DataFrame) -> Union[pd.DataFrame, Dict[str, pd.DataFrame]]:
+    @classmethod
+    def pivot_annotations(
+        cls,
+        df: pd.DataFrame,
+    ) -> Union[pd.DataFrame, Dict[str, pd.DataFrame]]:
         """
+        Annotations from narrow to wide format
+
         Converts the annotations from a long to a wide dataframe format,
         reconstituting the format of the original resource.
 
@@ -151,35 +156,30 @@ class Annotations(OmnipathRequestABC):
             If the data contains more than one resource, a `dict` of dataframes will be returned, one for each
             resource.
         """
-
         if df.source.nunique() > 1:
 
-            return dict(
-                (
-                    resource,
-                    cls.pivot_annotations(df[df.source == resource])
-                )
+            return {
+                resource: cls.pivot_annotations(df[df.source == resource])
                 for resource in df.source.unique()
-            )
+            }
 
-        index_cols = ['record_id', 'uniprot', 'genesymbol', 'label']
+        index_cols = ["record_id", "uniprot", "genesymbol", "label"]
 
-        if 'entity_type' in df.label.values:
+        if "entity_type" in df.label.values:
 
-            df = df.drop('entity_type', axis = 1)
+            df = df.drop("entity_type", axis=1)
 
         else:
 
-            index_cols.append('entity_type')
+            index_cols.append("entity_type")
 
         return dtypes.auto_dtype(
-            df.
-            drop('source', axis = 1).
-            set_index(index_cols).
-            unstack('label').
-            droplevel(axis = 1, level = 0).
-            reset_index().
-            drop('record_id', axis = 1)
+            df.drop("source", axis=1)
+            .set_index(index_cols)
+            .unstack("label")
+            .droplevel(axis=1, level=0)
+            .reset_index()
+            .drop("record_id", axis=1)
         )
 
 
