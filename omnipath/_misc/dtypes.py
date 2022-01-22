@@ -19,7 +19,6 @@ ALL = NUM + ('string',)
 
 def auto_dtype(
     data: Union[pd.DataFrame, pd.Series, Iterable],
-    convert: bool = True,
     categories: bool = True,
     **kwargs,
 ) -> Union[pd.DataFrame, pd.Series, str, dict]:
@@ -32,8 +31,6 @@ def auto_dtype(
     data
         A dataframe or an array like object such as :class:`pandas.Series`,
         :class:`numpy.ndarray` or list.
-    convert
-        Convert the data types to the best fitting types.
     categories
         Use the `category` data type for string variables with a small
         number of values compared to their size.
@@ -44,11 +41,7 @@ def auto_dtype(
     Returns
     -------
     :class:`pandas.DataFrame` or :class:`pandas.Series` or str or list
-        If :arg:`convert` is `True`: a dataframe or series with its data
-        type(s) converted.
-        If :arg:`convert` is `False`: Name of a data type for a single Series
-        or iterable, or a dict of data type names by column labels for a
-        dataframe.
+        A dataframe or series with its data type(s) converted.
     """
 
     method = (
@@ -57,12 +50,11 @@ def auto_dtype(
         _auto_dtype_series
     )
 
-    return method(data, convert = convert, categories = categories, **kwargs)
+    return method(data, categories = categories, **kwargs)
 
 
 def _auto_dtype_df(
     data: pd.DataFrame,
-    convert: bool = True,
     categories: bool = True,
     **kwargs,
 ) -> Union[pd.DataFrame, dict]:
@@ -71,17 +63,12 @@ def _auto_dtype_df(
 
         if col in kwargs:
 
-            return (
-                data[col].astype(kwargs[col])
-                    if convert else
-                kwargs[col]
-            )
+            return data[col].astype(kwargs[col])
 
         else:
 
             return _auto_dtype_series(
                 data[col],
-                convert = convert,
                 categories = categories,
             )
 
@@ -94,12 +81,11 @@ def _auto_dtype_df(
         for col in data
     )
 
-    return pd.DataFrame(result, index = data.index) if convert else result
+    return pd.DataFrame(result, index = data.index)
 
 
 def _auto_dtype_series(
     data: pd.Series,
-    convert: bool = True,
     categories: bool = True,
     **kwargs,
 ) -> Union[pd.Series, str]:
@@ -142,13 +128,13 @@ def _auto_dtype_series(
                     t = 'category'
                     converted = converted.astype(t)
 
-            return converted if convert else t
+            return converted
 
         except (OverflowError, ValueError):
 
             continue
 
-    return data if convert else data.dtype
+    return data
 
 
 def _has_na(data: Union[pd.Series, Iterable]) -> bool:
