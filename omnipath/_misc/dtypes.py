@@ -22,7 +22,7 @@ def auto_dtype(
     data: Union[pd.DataFrame, pd.Series, Iterable],
     categories: bool = True,
     **kwargs,
-) -> Union[pd.DataFrame, pd.Series, str, dict]:
+) -> Union[pd.DataFrame, pd.Series]:
     """
     Automatically guesses and optionally converts data types of a dataframe,
     series or other iterable.
@@ -35,7 +35,7 @@ def auto_dtype(
     categories
         Use the `category` data type for string variables with a small
         number of values compared to their size.
-    **kwargs
+    kwargs
         For dataframes, manually set the desired data type of certain
         variables.
 
@@ -58,7 +58,7 @@ def _auto_dtype_df(
     data: pd.DataFrame,
     categories: bool = True,
     **kwargs,
-) -> Union[pd.DataFrame, dict]:
+) -> pd.DataFrame:
 
     def process_col(col):
 
@@ -89,7 +89,7 @@ def _auto_dtype_series(
     data: pd.Series,
     categories: bool = True,
     **kwargs,
-) -> Union[pd.Series, str]:
+) -> pd.Series:
 
     data = pd.Series(data)
 
@@ -143,7 +143,7 @@ def _has_na(data: Union[pd.Series, Iterable]) -> bool:
     Checks if any item in the series looks like NA or NaN.
     """
 
-    return any(i in NA for i in data)
+    return pd.Series(data).isin(NA).any()
 
 
 def _string_is_bool(data: Union[pd.Series, Iterable]) -> bool:

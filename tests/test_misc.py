@@ -8,7 +8,7 @@ from omnipath._misc import dtypes
 
 class TestMisc:
 
-    def test_auto_dtype():
+    def test_auto_dtype(self):
 
         inp = pd.DataFrame(dict(
             a = ['1', '2', '3'],
@@ -30,6 +30,6 @@ class TestMisc:
             g = [False, True, True],
         ))
 
-        out = dtypes.auto_dtypes(inp)
+        out = dtypes.auto_dtype(inp)
 
         assert_frame_equal(exp, out)

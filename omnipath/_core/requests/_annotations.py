@@ -43,7 +43,7 @@ class Annotations(OmnipathRequestABC):
         force_full_download: bool = False,
         wide: bool = False,
         **kwargs,
-    ) -> pd.DataFrame:
+    ) -> Union[pd.DataFrame, Dict[str, pd.DataFrame]]:
         """
         Import annotations from [OmniPath]_.
 
@@ -76,7 +76,7 @@ class Annotations(OmnipathRequestABC):
         -------
         :class:`pandas.DataFrame`
             A dataframe containing different molecule (protein, complex, gene, miRNA, small molecule) annotations.
-            If :arg:`wide` is `True` and the result contains more than one resource, a `dict` of dataframes
+            If `wide` is `True` and the result contains more than one resource, a `dict` of dataframes
             will be returned, one for each resource.
 
         Notes
@@ -133,8 +133,8 @@ class Annotations(OmnipathRequestABC):
 
         return df
 
-    @classmethod
-    def pivot_annotations(cls, df: pd.DataFrame) -> Union[pd.DataFrame, Dict]:
+    @staticmethod
+    def pivot_annotations(df: pd.DataFrame) -> Union[pd.DataFrame, Dict[str, pd.DataFrame]]:
         """
         Converts the annotations from a long to a wide dataframe format,
         reconstituting the format of the original resource.
