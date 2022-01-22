@@ -162,10 +162,20 @@ class Annotations(OmnipathRequestABC):
                 for resource in df.source.unique()
             )
 
+        index_cols = ['record_id', 'uniprot', 'genesymbol', 'label']
+
+        if 'entity_type' in df.label.values:
+
+            df = df.drop('entity_type', axis = 1)
+
+        else:
+
+            index_cols.append('entity_type')
+
         return dtypes.auto_dtype(
             df.
             drop('source', axis = 1).
-            set_index(['record_id', 'uniprot', 'genesymbol', 'entity_type', 'label']).
+            set_index(index_cols).
             unstack('label').
             droplevel(axis = 1, level = 0).
             reset_index().
