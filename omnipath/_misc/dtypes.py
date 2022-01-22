@@ -9,9 +9,12 @@ TRUE = frozenset(("true", "t", "yes", "y"))
 FALSE = frozenset(("false", "f", "no", "n"))
 BOOL = frozenset().union(TRUE, FALSE)
 NA = frozenset(("na", "NA", "NaN", "none", "None", None, pd.NA, pd.NaT, np.NAN, np.nan))
-INT = ("int64", "uint64")
-NUM = INT + ("float64",)
-ALL = NUM + ("string",)
+INT = frozenset(
+    ("int64", "uint64", "int32", "uint32", "int16", "uint16", "int8", "uint8")
+)
+FLT = frozenset(("float64", "float32", "float128"))
+NUM = INT | FLT
+ALL = ("int64", "uint64", "float64", "string")
 
 
 def auto_dtype(
@@ -80,8 +83,8 @@ def _auto_dtype_series(
 
     for t in ALL:
 
-        if (data.dtype in NUM and t in NUM) or (
-            t == "string" and data.dtype != "object"
+        if (str(data.dtype) in INT and t in FLT) or (
+            t == "string" and str(data.dtype) != "object"
         ):
 
             continue
@@ -90,9 +93,21 @@ def _auto_dtype_series(
 
             converted = data.astype(t)
 
+            if t in FLT:
+
+                if str(data.dtype) in FLT:
+
+                    continue
+
+                elif str(data.dtype) not in FLT:
+
+                    return _auto_dtype_series(converted)
+
             if t in INT:
 
-                if _has_na(converted):
+                if _has_na(converted) or (
+                    str(data.dtype) in FLT and (data != converted).any()
+                ):
 
                     continue
 
@@ -101,6 +116,10 @@ def _auto_dtype_series(
                     t = "bool"
                     converted = converted.astype(t)
 
+                elif str(data.dtype) in INT:
+
+                    continue
+
             elif t == "string":
 
                 if not _has_na(converted) and _string_is_bool(converted):
@@ -108,7 +127,7 @@ def _auto_dtype_series(
                     t = "bool"
                     converted = _string_to_bool(converted)
 
-                if converted.nunique() < len(converted) / 4:
+                elif converted.nunique() < len(converted) / 4:
 
                     t = "category"
                     converted = converted.astype(t)
