@@ -49,7 +49,6 @@ class Downloader:
                 max_retries=Retry(
                     total=self._options.num_retries,
                     redirect=5,
-                    allowed_methods=["HEAD", "GET", "OPTIONS"],
                     status_forcelist=[413, 429, 500, 502, 503, 504],
                     backoff_factor=1,
                 )
