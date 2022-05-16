@@ -174,7 +174,7 @@ setup(
         )
     ),
     extras_require={
-        "graph": ["networkx>=4.3.0"],
+        "graph": ["networkx>=2.3.0"],
         "tests": ["tox>=3.20.1"],
         "docs": [
             line
