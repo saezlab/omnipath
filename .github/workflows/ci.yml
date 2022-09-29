@@ -2,7 +2,7 @@ name: CI
 
 on:
     schedule:
-    -   cron: 00 00 * * 1     # run every Monday at 00:00
+    -   cron: 00 00 * * 1  # run every Monday at 00:00
     push:
         branches: [master]
     pull_request:
@@ -17,15 +17,11 @@ jobs:
             max-parallel: 4
             matrix:
                 os: [ubuntu-latest, macos-latest]
-                python: [3.8, 3.9]
+                python: [3.8]
                 test_server: [false]
                 include:
                 -   os: ubuntu-latest
-                    python: 3.10
-                    # TODO(michalk8):
-                    # server tests crash after 1st pytest command in tox (exit status 2)
-                    # only happens when `rpy2` and `OmnipathR` is installed, and I am unable to find a reason/fix
-                    test_server: false
+                    python: 3.9
         env:
             OS: ${{ matrix.os }}
             PYTHON: ${{ matrix.python }}
