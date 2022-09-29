@@ -2,13 +2,11 @@ name: CI
 
 on:
     schedule:
-    -   cron: 00 00 * * 1     # run every Monday at 00:00
+    -   cron: 00 00 * * 1  # run every Monday at 00:00
     push:
-        branches:
-        -   master
+        branches: [master]
     pull_request:
-        branches:
-        -   master
+        branches: [master]
 
 jobs:
     build:
@@ -19,15 +17,11 @@ jobs:
             max-parallel: 4
             matrix:
                 os: [ubuntu-latest, macos-latest]
-                python: [3.7, 3.8]
+                python: [3.8]
                 test_server: [false]
                 include:
                 -   os: ubuntu-latest
                     python: 3.9
-                    # TODO(michalk8):
-                    # server tests crash after 1st pytest command in tox (exit status 2)
-                    # only happens when `rpy2` and `OmnipathR` is installed, and I am unable to find a reason/fix
-                    test_server: false
         env:
             OS: ${{ matrix.os }}
             PYTHON: ${{ matrix.python }}
@@ -72,10 +66,6 @@ jobs:
                 sudo apt-get install libcurl4-openssl-dev
                 sudo Rscript --vanilla -e "if (!(requireNamespace('BiocManager', quietly=TRUE))) { install.packages(c('BiocManager', 'curl'), repos='https://cloud.r-project.org/') }; BiocManager::install('OmnipathR')"
                 Rscript --vanilla -e "packageVersion('OmnipathR')"
-
-        -   name: Lint
-            run: |
-                tox -e lint
 
         -   name: Test
             env:
