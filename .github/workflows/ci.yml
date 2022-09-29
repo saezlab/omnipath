@@ -5,6 +5,7 @@ on:
     -   cron: 00 00 * * 1  # run every Monday at 00:00
     push:
         branches: [master]
+        tags: [v*]
     pull_request:
         branches: [master]
 
