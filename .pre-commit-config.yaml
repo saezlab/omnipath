@@ -9,7 +9,7 @@ default_stages:
 minimum_pre_commit_version: 2.7.1
 repos:
 -   repo: https://github.com/psf/black
-    rev: 21.6b0
+    rev: 22.3.0
     hooks:
     -   id: black
         additional_dependencies: [toml]
