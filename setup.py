@@ -44,7 +44,7 @@ setup(
     url="https://omnipathdb.org/",
     download_url="https://github.com/saezlab/omnipath/releases/",
     project_urls={
-        "Documentation": "https://omnipath.readthedocs.io/en/latest",
+        "Documentation": "https://omnipath.readthedocs.io",
         "Source Code": "https://github.com/saezlab/omnipath",
     },
     license="MIT",

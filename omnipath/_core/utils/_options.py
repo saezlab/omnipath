@@ -92,7 +92,7 @@ class Options:
     license: License = attr.ib(
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of((str, License))),
-        converter=(lambda l: None if l is None else License(l)),
+        converter=(lambda val: None if val is None else License(val)),
         on_setattr=attr.setters.convert,
     )
     password: Optional[str] = attr.ib(
