@@ -22,7 +22,7 @@ except ImportError:
     __author__ = "Michal Klein, Dénes Türei"
     __maintainer__ = "Michal Klein, Dénes Türei"
     __email__ = "turei.denes@gmail.com"
-    __version__ = "1.0.5"
+    __version__ = "1.0.6"
 
 
 setup(
