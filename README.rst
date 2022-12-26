@@ -32,7 +32,6 @@ downloading data into data frames or dictionaries.
 
 The Python package for OmniPath is pypath, isn't it?
 ----------------------------------------------------
-
 `pypath`_ is a tool for building the OmniPath databases in a fully customizable way.
 We recommend to use pypath if you want to:
 
@@ -65,7 +64,7 @@ certain (not all) annotations of the proteins.
     :target: https://pepy.tech/project/omnipath
     :alt: Downloads
 
-.. |CI| image:: https://img.shields.io/github/workflow/status/saezlab/omnipath/CI/master
+.. |CI| image:: https://img.shields.io/github/actions/workflow/status/saezlab/omnipath/ci.yml?branch=master
     :target: https://github.com/saezlab/omnipath/actions?query=workflow:CI
     :alt: CI
 
