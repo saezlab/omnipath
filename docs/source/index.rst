@@ -24,7 +24,7 @@ This package is a Python equivalent of an R package `OmnipathR`_ for accessing w
     :target: https://pepy.tech/project/omnipath
     :alt: Downloads
 
-.. |CI| image:: https://img.shields.io/github/workflow/status/saezlab/omnipath/CI/master
+.. |CI| image:: https://img.shields.io/github/actions/workflow/status/saezlab/omnipath/ci.yml?branch=master
     :target: https://github.com/saezlab/omnipath/actions?query=workflow:CI
     :alt: CI
 
