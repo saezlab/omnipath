@@ -22,7 +22,7 @@ except ImportError:
     __author__ = "Michal Klein, Dénes Türei"
     __maintainer__ = "Michal Klein, Dénes Türei"
     __email__ = "turei.denes@gmail.com"
-    __version__ = "1.0.5"
+    __version__ = "1.0.6"
 
 
 setup(
@@ -44,7 +44,7 @@ setup(
     url="https://omnipathdb.org/",
     download_url="https://github.com/saezlab/omnipath/releases/",
     project_urls={
-        "Documentation": "https://omnipath.readthedocs.io/en/latest",
+        "Documentation": "https://omnipath.readthedocs.io",
         "Source Code": "https://github.com/saezlab/omnipath",
     },
     license="MIT",
@@ -174,7 +174,7 @@ setup(
         )
     ),
     extras_require={
-        "graph": ["networkx>=4.3.0"],
+        "graph": ["networkx>=2.3.0"],
         "tests": ["tox>=3.20.1"],
         "docs": [
             line

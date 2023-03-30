@@ -92,6 +92,7 @@ class InteractionDataset(PrettyEnumMixin):
     MIRNA_TARGET = "mirnatarget"
     OMNIPATH = "omnipath"
     PATHWAY_EXTRA = "pathwayextra"
+    SMALL_MOLECULE = "small_molecule"
     TF_MIRNA = "tf_mirna"
     TF_REGULONS = "tfregulons"
     TF_TARGET = "tf_target"

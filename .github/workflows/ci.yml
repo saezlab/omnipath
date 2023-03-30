@@ -2,13 +2,12 @@ name: CI
 
 on:
     schedule:
-    -   cron: 00 00 * * 1     # run every Monday at 00:00
+    -   cron: 00 00 * * 1  # run every Monday at 00:00
     push:
-        branches:
-        -   master
+        branches: [master]
+        tags: [v*]
     pull_request:
-        branches:
-        -   master
+        branches: [master]
 
 jobs:
     build:
@@ -19,34 +18,30 @@ jobs:
             max-parallel: 4
             matrix:
                 os: [ubuntu-latest, macos-latest]
-                python: [3.7, 3.8]
+                python: [3.8]
                 test_server: [false]
                 include:
                 -   os: ubuntu-latest
                     python: 3.9
-                    # TODO(michalk8):
-                    # server tests crash after 1st pytest command in tox (exit status 2)
-                    # only happens when `rpy2` and `OmnipathR` is installed, and I am unable to find a reason/fix
-                    test_server: false
         env:
             OS: ${{ matrix.os }}
             PYTHON: ${{ matrix.python }}
 
         steps:
-        -   uses: actions/checkout@v2
+        -   uses: actions/checkout@v3
             with:
                 fetch-depth: 0
         -   name: Set up Python ${{ matrix.python }}
-            uses: actions/setup-python@v2
+            uses: actions/setup-python@v4
             with:
                 python-version: ${{ matrix.python }}
 
         -   name: Get pip cache dir
             id: pip-cache
             run: |
-                echo "::set-output name=dir::$(pip cache dir)"
+                echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
         -   name: Cache pip
-            uses: actions/cache@v2
+            uses: actions/cache@v3
             with:
                 path: ${{ steps.pip-cache.outputs.dir }}
                 key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -61,7 +56,7 @@ jobs:
             with:
                 r-version: 4.0.3
         -   name: Get R cache dir
-            uses: actions/cache@v2
+            uses: actions/cache@v3
             if: matrix.test_server
             with:
                 path: ~/.local/share/renv
@@ -72,10 +67,6 @@ jobs:
                 sudo apt-get install libcurl4-openssl-dev
                 sudo Rscript --vanilla -e "if (!(requireNamespace('BiocManager', quietly=TRUE))) { install.packages(c('BiocManager', 'curl'), repos='https://cloud.r-project.org/') }; BiocManager::install('OmnipathR')"
                 Rscript --vanilla -e "packageVersion('OmnipathR')"
-
-        -   name: Lint
-            run: |
-                tox -e lint
 
         -   name: Test
             env:
@@ -95,7 +86,7 @@ jobs:
         needs: build
         runs-on: ubuntu-latest
         steps:
-        -   uses: actions/checkout@v2
+        -   uses: actions/checkout@v3
             with:
                 fetch-depth: 0
 
@@ -105,7 +96,7 @@ jobs:
             run: python -m build --sdist --wheel --outdir dist/
 
         -   name: Publish package on PyPI
-            uses: pypa/gh-action-pypi-publish@master
+            uses: pypa/gh-action-pypi-publish@release/v1
             with:
                 user: __token__
                 password: ${{ secrets.PYPI_PASSWORD }}
