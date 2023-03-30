@@ -217,7 +217,7 @@ class CollecTRI(InteractionRequest):
     """
 
     def __init__(self):
-        super().__init__(InteractionDataset.COLLECRI)
+        super().__init__(InteractionDataset.COLLECTRI)
 
     @classmethod
     def _filter_params(cls, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -465,6 +465,7 @@ class PostTranslational(AllInteractions):
 
 
 __all__ = [
+    CollecTRI,
     Dorothea,
     OmniPath,
     TFtarget,
