@@ -84,6 +84,7 @@ class InteractionDataset(PrettyEnumMixin):
     See :mod:`omnipath.interactions` for more information.
     """
 
+    COLLECTRI = "collectri"
     DOROTHEA = "dorothea"
     KINASE_EXTRA = "kinaseextra"
     LIGREC_EXTRA = "ligrecextra"

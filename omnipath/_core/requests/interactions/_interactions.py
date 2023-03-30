@@ -206,6 +206,27 @@ class Dorothea(InteractionRequest):
 
 
 @final
+class CollecTRI(InteractionRequest):
+    """
+    Request interactions from the `collectri` dataset.
+
+    Imports the `dataset
+    <https://omnipathdb.org/interactions?datasets=collectri>`__ which contains
+    transcription factor (TF)-target interactions from
+    `CollecTRI <https://github.com/saezlab/CollecTRI>`__.
+    """
+
+    def __init__(self):
+        super().__init__(InteractionDataset.COLLECRI)
+
+    @classmethod
+    def _filter_params(cls, params: Dict[str, Any]) -> Dict[str, Any]:
+        params = super()._filter_params(params)
+
+        return params
+
+
+@final
 class TFtarget(InteractionRequest):
     """
     Request interactions from the `TF-target` dataset.
@@ -234,12 +255,17 @@ class Transcriptional(InteractionRequest):
     """
     Request all `TF-target` interactions from [OmniPath]_.
 
-    Imports the `dataset <https://omnipathdb.org/interactions?datasets=dorothea,tf_target>`__ which contains
-    transcription factor-target protein coding gene interactions.
+    Imports the `dataset
+    <https://omnipathdb.org/interactions?datasets=dorothea,tf_target,collectri>`__
+    which contains transcription factor-target protein coding gene interactions.
     """
 
     def __init__(self):
-        super().__init__((InteractionDataset.DOROTHEA, InteractionDataset.TF_TARGET))
+        super().__init__((
+            InteractionDataset.DOROTHEA,
+            InteractionDataset.TF_TARGET,
+            InteractionDataset.COLLECTRI,
+        ))
 
     @classmethod
     def _filter_params(cls, params: Dict[str, Any]) -> Dict[str, Any]:

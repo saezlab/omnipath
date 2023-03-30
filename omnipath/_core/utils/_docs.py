@@ -17,6 +17,7 @@ _interactions_datasets = """
     - :attr:`omnipath.constants.InteractionDataset.PATHWAY_EXTRA`
     - :attr:`omnipath.constants.InteractionDataset.KINASE_EXTRA`
     - :attr:`omnipath.constants.InteractionDataset.LIGREC_EXTRA`
+    - :attr:`omnipath.constants.InteractionDataset.COLLECTRI`
     - :attr:`omnipath.constants.InteractionDataset.DOROTHEA`
     - :attr:`omnipath.constants.InteractionDataset.TF_TARGET`
     - :attr:`omnipath.constants.InteractionDataset.TF_MIRNA`
