@@ -258,15 +258,9 @@ def omnipathr(request):
         return None
     try:
         resp = requests.get(url)
-        status_code = resp.status_code
+        resp.raise_for_status()
     except Exception as e:
         logging.error(f"Unable to contact the server at `{url}`. Reason: `{e}`")
-        return None
-
-    if status_code != 200:
-        logging.error(
-            f"Unable to contact the server at `{url}`. Status code: `{status_code}`"
-        )
         return None
 
     return _can_import_omnipathR()

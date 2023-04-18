@@ -138,7 +138,7 @@ def import_intercell_network(
         how="inner",
         left_on="target",
         right_on="uniprot",
-        suffixes=["_intercell_source", "_intercell_target"],
+        suffixes=("_intercell_source", "_intercell_target"),
     )
     if res.empty:
         raise ValueError("No values are left after merging interactions and receivers.")

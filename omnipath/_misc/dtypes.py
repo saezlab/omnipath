@@ -56,13 +56,10 @@ def _auto_dtype_df(
     **kwargs,
 ) -> pd.DataFrame:
     def process_col(col):
-
         if col in kwargs:
-
             return data[col].astype(kwargs[col])
 
         else:
-
             return _auto_dtype_series(
                 data[col],
                 categories=categories,
@@ -78,64 +75,49 @@ def _auto_dtype_series(
     categories: bool = True,
     **kwargs,
 ) -> pd.Series:
-
     data = pd.Series(data)
 
     for t in ALL:
-
         if (str(data.dtype) in INT and t in FLT) or (
             t == "string" and str(data.dtype) != "object"
         ):
-
             continue
 
         try:
-
             converted = data.astype(t)
 
             if t in FLT:
-
                 if str(data.dtype) in FLT:
-
                     continue
 
                 elif str(data.dtype) not in FLT:
-
                     return _auto_dtype_series(converted)
 
             if t in INT:
-
                 if _has_na(converted) or (
                     str(data.dtype) in FLT and (data != converted).any()
                 ):
-
                     continue
 
                 elif sorted(converted.unique()) == [0, 1]:
-
                     t = "bool"
                     converted = converted.astype(t)
 
                 elif str(data.dtype) in INT:
-
                     continue
 
             elif t == "string":
-
                 if not _has_na(converted) and _string_is_bool(converted):
-
                     t = "bool"
                     converted = _string_to_bool(converted)
 
                 elif converted.nunique() < len(converted) / 4:
-
                     t = "category"
                     converted = converted.astype(t)
 
             return converted
 
         except (OverflowError, ValueError):
-
             continue
 
     return data
@@ -164,7 +146,6 @@ def _string_to_bool(data: Union[pd.Series, Iterable]) -> pd.Series:
     recognized as a boolean value.
     """
     if _string_is_bool(data):
-
         return pd.Series(i.lower() in TRUE for i in data)
 
     return pd.Series(data)

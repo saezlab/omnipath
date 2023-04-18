@@ -6,7 +6,6 @@ from omnipath._misc import dtypes
 
 class TestMisc:
     def test_auto_dtype(self):
-
         inp = pd.DataFrame(
             {
                 "a": ["1", "2", "3"],
@@ -21,7 +20,7 @@ class TestMisc:
                 "j": ["1.0", "2.0", "3.0"],
                 "k": ["1.0", "0.0", "1.0"],
                 "l": pd.Series([1, 2, 3], dtype="int8"),
-                "m": pd.Series([1.09, 2.51, 3.33], dtype="float128"),
+                "m": pd.Series([1.09, 2.51, 3.33], dtype="float32"),
             }
         )
 
@@ -39,7 +38,7 @@ class TestMisc:
                 "j": [1, 2, 3],
                 "k": [True, False, True],
                 "l": pd.Series([1, 2, 3], dtype="int8"),
-                "m": pd.Series([1.09, 2.51, 3.33], dtype="float128"),
+                "m": pd.Series([1.09, 2.51, 3.33], dtype="float32"),
             }
         )
 

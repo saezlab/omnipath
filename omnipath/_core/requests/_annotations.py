@@ -126,9 +126,7 @@ class Annotations(OmnipathRequestABC):
         return True
 
     def _post_process(self, df: pd.DataFrame, **kwargs) -> pd.DataFrame:
-
         if self._wide:
-
             df = self.pivot_annotations(df)
 
         return df
@@ -157,7 +155,6 @@ class Annotations(OmnipathRequestABC):
             resource.
         """
         if df.source.nunique() > 1:
-
             return {
                 resource: cls.pivot_annotations(df[df.source == resource])
                 for resource in df.source.unique()
@@ -166,11 +163,9 @@ class Annotations(OmnipathRequestABC):
         index_cols = ["record_id", "uniprot", "genesymbol", "label"]
 
         if "entity_type" in df.label.values:
-
             df = df.drop("entity_type", axis=1)
 
         else:
-
             index_cols.append("entity_type")
 
         return dtypes.auto_dtype(
