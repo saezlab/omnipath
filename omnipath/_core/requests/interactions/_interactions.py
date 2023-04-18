@@ -261,11 +261,13 @@ class Transcriptional(InteractionRequest):
     """
 
     def __init__(self):
-        super().__init__((
-            InteractionDataset.DOROTHEA,
-            InteractionDataset.TF_TARGET,
-            InteractionDataset.COLLECTRI,
-        ))
+        super().__init__(
+            (
+                InteractionDataset.DOROTHEA,
+                InteractionDataset.TF_TARGET,
+                InteractionDataset.COLLECTRI,
+            )
+        )
 
     @classmethod
     def _filter_params(cls, params: Dict[str, Any]) -> Dict[str, Any]:

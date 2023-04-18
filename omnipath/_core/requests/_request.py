@@ -68,7 +68,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
 
     _json_reader = _error_handler(partial(pd.read_json, typ="frame"))
     _tsv_reader = _error_handler(
-        partial(pd.read_csv, sep="\t", header=0, squeeze=False, low_memory=False)
+        partial(pd.read_csv, sep="\t", header=0, low_memory=False)
     )
     _query_type: Optional[QueryType] = None
 

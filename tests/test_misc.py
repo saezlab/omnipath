@@ -6,7 +6,6 @@ from omnipath._misc import dtypes
 
 class TestMisc:
     def test_auto_dtype(self):
-
         inp = pd.DataFrame(
             {
                 "a": ["1", "2", "3"],
