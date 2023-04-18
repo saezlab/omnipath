@@ -250,6 +250,7 @@ class TestUtils:
             receiver_params={"categories": "receptor"},
         )
 
+        pd.testing.assert_frame_equal(res, import_intercell_result, check_dtype=False)
         assert isinstance(res, pd.DataFrame)
         np.testing.assert_array_equal(res.shape, import_intercell_result.shape)
 
