@@ -46,12 +46,20 @@ def _generate_orthologs(data, column, map_dict, one_to_many):
             complexes.append((name, '_'.join(complex)))
     
     # Create output DataFrame
-    result = pd.DataFrame(complexes, columns=['source', 'target']).set_index('source')
+    col_names = ['orthology_source', 'orthology_target']
+    result = pd.DataFrame(complexes, columns=col_names).set_index('orthology_source')
     
     return result
 
 
-def orthology_translate_column(data, column, id_type, target_organism, replace=True, keep_untranslated=False, source_organism=9606, one_to_many=1):
+def translate_column(data,
+                     column, 
+                     id_type,
+                     target_organism,
+                     replace=True,
+                     keep_untranslated=False,
+                     source_organism=9606,
+                     one_to_many=1):
     """
     Generate orthologs for a given column in a DataFrame.
     
@@ -102,11 +110,11 @@ def orthology_translate_column(data, column, id_type, target_organism, replace=T
     
     # replace orthologs
     if replace:
-        data[column] = data['target']
-        data = data.drop(columns=['target'])
+        data[column] = data['orthology_target']
+        data = data.drop(columns=['orthology_target'])
         
     elif keep_untranslated:
-        data[column] = data.apply(lambda x: x['target'] if not pd.isnull(x['target']) else x[column], axis=1)
+        data[column] = data.apply(lambda x: x['orthology_target'] if not pd.isnull(x['orthology_target']) else x[column], axis=1)
     
     data = data.dropna(subset=[column])
     return data
