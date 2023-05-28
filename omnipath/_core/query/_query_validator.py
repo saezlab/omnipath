@@ -14,6 +14,7 @@ from typing import (
 from urllib.parse import urljoin
 import json
 import logging
+import sys
 
 from omnipath._core.utils._docs import d
 from omnipath._core.query._types import (
@@ -217,7 +218,7 @@ class ServerValidatorMeta(EnumMeta, ABCMeta):  # noqa: D101
         vals = []
         for k in list(attributedict._member_names):
             vals.append(attributedict.pop(k, None))
-        attributedict._member_names = []
+        attributedict._member_names = [] if sys.version_info[1] < 11 else {}
 
         return vals
 
