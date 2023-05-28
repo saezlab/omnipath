@@ -108,7 +108,7 @@ def _inject_api_method(
         clazz.get = wrapper(unwrap(clazz.get))
         return
 
-    clazz.get = wrapper(MethodType(_get_helper, clazz))
+    clazz.get = MethodType(wrapper(_get_helper), clazz)
 
 
 def _inject_params(
