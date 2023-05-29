@@ -9,6 +9,7 @@ from omnipath._core.utils._docs import d
 from omnipath._core.requests._utils import _inject_params
 from omnipath._core.requests._request import GraphLike, CommonPostProcessor
 from omnipath.constants._pkg_constants import Key, final
+from omnipath._core.requests.interactions._json import _json_cols_hook
 
 Datasets_t = Union[str, InteractionDataset, Sequence[str], Sequence[InteractionDataset]]
 
@@ -118,6 +119,13 @@ class InteractionRequest(CommonPostProcessor, GraphLike, ABC):
         )
 
         return res
+
+    def _post_process(self, df: pd.DataFrame) -> pd.DataFrame:
+
+        df = super()._post_process(df)
+        df = _json_cols_hook(df)
+
+        return df
 
 
 class CommonParamFilter(InteractionRequest, ABC):
