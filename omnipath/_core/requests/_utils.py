@@ -56,6 +56,7 @@ def _inject_api_method(
     """
 
     def argspec_factory(orig_fn: Callable) -> Callable:
+        orig_fn = getattr(orig_fn, "__func__", orig_fn)
         orig_params = inspect.signature(orig_fn).parameters
         # maintain the original signature if the subclass has overriden the method
         # this will lose the docstring of the original function
@@ -103,12 +104,11 @@ def _inject_api_method(
     def wrapper(wrapped, _instance, args, kwargs):
         return wrapped(*args, **kwargs)
 
-    if hasattr(clazz, "get") and not hasattr(clazz.get, "__wrapped__"):
-        # overriding in subclass
-        clazz.get = wrapper(unwrap(clazz.get))
-        return
+    from_class = hasattr(clazz, "get") and not hasattr(clazz.get, "__wrapped__")
+    func = clazz.get if from_class else _get_helper
+    func = getattr(func, "__func__", func)
 
-    clazz.get = MethodType(wrapper(_get_helper), clazz)
+    clazz.get = MethodType(wrapper(func), clazz)
 
 
 def _inject_params(
