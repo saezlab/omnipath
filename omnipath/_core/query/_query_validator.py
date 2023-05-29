@@ -12,9 +12,9 @@ from typing import (
     FrozenSet,
 )
 from urllib.parse import urljoin
+import sys
 import json
 import logging
-import sys
 
 from omnipath._core.utils._docs import d
 from omnipath._core.query._types import (
