@@ -126,7 +126,7 @@ class TestInteractions:
             AllInteractions,
         ],
     )
-    def test_intercation_get(
+    def test_interaction_get(
         self, cache_backup, interaction, interaction_resources: bytes, requests_mock
     ):
         url = urljoin(options.url, interaction._query_type.endpoint)
