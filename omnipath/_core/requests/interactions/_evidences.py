@@ -3,6 +3,11 @@ from typing import Callable, Iterable, List, Optional, Tuple, Union
 import pandas as pd
 
 from omnipath._misc.utils import to_set
+from omnipath._core.requests._utils import (
+    _strip_resource_label_df,
+    _count_resources,
+    _count_references,
+)
 
 EVIDENCES_KEYS = ("positive", "negative", "directed", "undirected")
 
@@ -176,6 +181,10 @@ def from_evidences(
         df["ce_directed"] >= df["ce_directed_opp"]
     )
     df.drop(columns = ["ce_directed", "ce_directed_opp"], inplace = True)
+
+    _count_resources(df)
+    _count_references(df)
+    _strip_resource_label_df(df, col = "references")
 
     # drop records which remained without evidences
     df = df[df.sources.apply(bool)]
