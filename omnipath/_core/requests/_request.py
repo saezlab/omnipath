@@ -27,7 +27,9 @@ from omnipath._core.requests._utils import (
     _ERROR_EMPTY_FMT,
     _inject_params,
     _inject_api_method,
-    _strip_resource_label,
+    _strip_resource_label_df,
+    _count_resources,
+    _count_references,
 )
 from omnipath.constants._pkg_constants import DEFAULT_FIELD, Key, Format, final
 from omnipath._core.downloader._downloader import Downloader
@@ -348,25 +350,10 @@ class CommonPostProcessor(OmnipathRequestABC, ABC):
         :class:`pandas.DataFrame`
             The modified dataframe.
         """
-        if "references" in df:
-            df["references_stripped"] = _strip_resource_label(df["references"])
-            df["n_references"] = _strip_resource_label(
-                df["references"], func=lambda row: len(set(row))
-            )
-        if "sources" in df:
-            df["n_sources"] = df["sources"].astype(str).str.split(";").apply(len)
-            df["n_primary_sources"] = (
-                df["sources"]
-                .astype(str)
-                .str.split(";")
-                .apply(
-                    lambda row: len(
-                        [r for r in row if "_" not in r]
-                        if isinstance(row, Iterable)
-                        else 0
-                    )
-                )
-            )
+
+        _count_resources(df)
+        _count_references(df)
+        _strip_resource_label_df(df, col = "references")
 
         return df
 

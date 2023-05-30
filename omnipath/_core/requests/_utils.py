@@ -157,6 +157,38 @@ def _strip_resource_label(
     )
 
 
+def _strip_resource_label_df(
+        df: pd.DataFrame,
+        col: str,
+        func: Optional[Callable] = None,
+    ) -> None:
+    if col in df:
+        df[f'{col}_stripped'] = _strip_resource_label(df[col], func=func)
+
+
+def _count_references(df: pd.DataFrame) -> None:
+    if "references" in df:
+        df["n_references"] = _strip_resource_label(
+            df["references"], func=lambda row: len(set(row))
+        )
+
+def _count_resources(df: pd.DataFrame) -> None:
+    if "sources" in df:
+        df["n_sources"] = df["sources"].astype(str).str.split(";").apply(len)
+        df["n_primary_sources"] = (
+            df["sources"]
+            .astype(str)
+            .str.split(";")
+            .apply(
+                lambda row: len(
+                    [r for r in row if "_" not in r]
+                    if isinstance(row, Iterable)
+                    else 0
+                )
+            )
+        )
+
+
 _ERROR_EMPTY_FMT = (
     "No {obj} were retrieved. Please check if supplying valid parameter values."
 )
