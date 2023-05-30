@@ -23,7 +23,6 @@ def convert_json_col(df: pd.DataFrame, col: str) -> pd.DataFrame:
     """
 
     if col in df.columns:
-
         df[col] = df[col].apply(json.loads)
 
     return df
@@ -34,8 +33,7 @@ def _json_cols_hook(df: pd.DataFrame) -> pd.DataFrame:
     Handle the JSON columns in post processing, if there is any.
     """
 
-    for col in ('extra_attrs', 'evidences'):
-
+    for col in ("extra_attrs", "evidences"):
         df = convert_json_col(df, col)
 
     return df

@@ -1,4 +1,4 @@
-from typing import Any, Iterable, Set
+from typing import Any, Set, Iterable
 
 
 def to_set(value: Any) -> Set:
@@ -25,17 +25,13 @@ def to_set(value: Any) -> Set:
     """
 
     if isinstance(value, Set):
-
         return value
 
     elif value is None:
-
         return set()
 
     elif isinstance(value, Iterable) and not isinstance(value, (str, bytes)):
-
         return set(value)
 
     else:
-
         return {value}

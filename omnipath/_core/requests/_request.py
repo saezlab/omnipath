@@ -26,10 +26,10 @@ from omnipath._core.utils._docs import d
 from omnipath._core.requests._utils import (
     _ERROR_EMPTY_FMT,
     _inject_params,
-    _inject_api_method,
-    _strip_resource_label_df,
     _count_resources,
     _count_references,
+    _inject_api_method,
+    _strip_resource_label_df,
 )
 from omnipath.constants._pkg_constants import DEFAULT_FIELD, Key, Format, final
 from omnipath._core.downloader._downloader import Downloader
@@ -101,13 +101,13 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
 
     def _get(self, **kwargs) -> pd.DataFrame:
         self._last_param = {}
-        self._last_param['original'] = kwargs.copy()
+        self._last_param["original"] = kwargs.copy()
         kwargs = self._modify_params(kwargs)
         kwargs = self._inject_fields(kwargs)
         kwargs, callback = self._convert_params(kwargs)
         kwargs = self._validate_params(kwargs)
         kwargs = self._finalize_params(kwargs)
-        self._last_param['final'] = kwargs.copy()
+        self._last_param["final"] = kwargs.copy()
 
         res = self._downloader.maybe_download(
             self._query_type.endpoint, params=kwargs, callback=callback, is_final=False
@@ -164,15 +164,12 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
 
     def _inject_fields(self, params: Dict[str, Any]) -> Dict[str, Any]:
         try:
-            requested = params.get('fields', [])
+            requested = params.get("fields", [])
             defaults = getattr(DEFAULT_FIELD, self._query_type.name).value
-            if (
-                self._get_strict_evidences(params) and
-                'evidences' not in requested
-            ):
-                defaults += ('evidences',)
+            if self._get_strict_evidences(params) and "evidences" not in requested:
+                defaults += ("evidences",)
 
-            params.pop('strict_evidences', None)
+            params.pop("strict_evidences", None)
             _inject_params(
                 params,
                 key=self._query_type(Key.FIELDS.value).param,
@@ -337,7 +334,7 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
     def _get_strict_evidences(cls, params: Dict[str, Any]) -> bool:
         strict_evidences = params.get("strict_evidences", None)
         if strict_evidences is None:
-            strict_evidences = getattr(cls, '_strict_evidences', False)
+            strict_evidences = getattr(cls, "_strict_evidences", False)
         return strict_evidences
 
     def __str__(self) -> str:
@@ -375,7 +372,7 @@ class CommonPostProcessor(OmnipathRequestABC, ABC):
 
         _count_resources(df)
         _count_references(df)
-        _strip_resource_label_df(df, col = "references")
+        _strip_resource_label_df(df, col="references")
 
         return df
 

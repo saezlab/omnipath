@@ -122,20 +122,19 @@ class InteractionRequest(CommonPostProcessor, GraphLike, ABC):
         return res
 
     def _post_process(self, df: pd.DataFrame) -> pd.DataFrame:
-
         df = super()._post_process(df)
         df = _json_cols_hook(df)
 
-        original_param = self._last_param['original']
+        original_param = self._last_param["original"]
         strict_evidences = self._get_strict_evidences(original_param)
 
         if strict_evidences:
             datasets = {ds.value for ds in self._datasets}
-            resources = self._last_param['final'].get('resources', ())
-            df = only_from(df, datasets = datasets, resources = resources)
-            fields_requested = original_param.get('fields', ())
-            if 'evidences' not in fields_requested:
-                df.drop(columns = 'evidences', inplace = True)
+            resources = self._last_param["final"].get("resources", ())
+            df = only_from(df, datasets=datasets, resources=resources)
+            fields_requested = original_param.get("fields", ())
+            if "evidences" not in fields_requested:
+                df.drop(columns="evidences", inplace=True)
 
         return df
 

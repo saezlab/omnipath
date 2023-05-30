@@ -71,9 +71,9 @@ def _inject_api_method(
         }
 
         for c in clazz.__mro__:
-            if c.__name__ == 'InteractionRequest':
-                parameters['strict_evidences'] = Parameter(
-                    'strict_evidences',
+            if c.__name__ == "InteractionRequest":
+                parameters["strict_evidences"] = Parameter(
+                    "strict_evidences",
                     kind=Parameter.KEYWORD_ONLY,
                     default=None,
                     annotation=Optional[bool],
@@ -167,12 +167,12 @@ def _strip_resource_label(
 
 
 def _strip_resource_label_df(
-        df: pd.DataFrame,
-        col: str,
-        func: Optional[Callable] = None,
-    ) -> None:
+    df: pd.DataFrame,
+    col: str,
+    func: Optional[Callable] = None,
+) -> None:
     if col in df:
-        df[f'{col}_stripped'] = _strip_resource_label(df[col], func=func)
+        df[f"{col}_stripped"] = _strip_resource_label(df[col], func=func)
 
 
 def _count_references(df: pd.DataFrame) -> None:
@@ -180,6 +180,7 @@ def _count_references(df: pd.DataFrame) -> None:
         df["n_references"] = _strip_resource_label(
             df["references"], func=lambda row: len(set(row))
         )
+
 
 def _count_resources(df: pd.DataFrame) -> None:
     if "sources" in df:
@@ -190,9 +191,7 @@ def _count_resources(df: pd.DataFrame) -> None:
             .str.split(";")
             .apply(
                 lambda row: len(
-                    [r for r in row if "_" not in r]
-                    if isinstance(row, Iterable)
-                    else 0
+                    [r for r in row if "_" not in r] if isinstance(row, Iterable) else 0
                 )
             )
         )
