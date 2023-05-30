@@ -217,8 +217,6 @@ def _ensure_unnested(
         isinstance(evs_df.iloc[0, 0], dict) and
         not set(EVIDENCES_KEYS) - set(evs_df.iloc[0, 0].keys())
     ):
-
-        print('unnest triggered')
         evs_df = unnest_evidences(evs_df, col = evs_df.columns[0])
         columns = EVIDENCES_KEYS
 

@@ -70,6 +70,15 @@ def _inject_api_method(
             k: v for k, v in clazz._annotations().items() if k not in parameters
         }
 
+        for c in clazz.__mro__:
+            if c.__name__ == 'InteractionRequest':
+                parameters['strict_evidences'] = Parameter(
+                    'strict_evidences',
+                    kind=Parameter.KEYWORD_ONLY,
+                    default=None,
+                    annotation=Optional[bool],
+                )
+
         sig = inspect.signature(lambda _: _)
         sig = sig.replace(
             parameters=[Parameter("cls", kind=Parameter.POSITIONAL_ONLY)]
