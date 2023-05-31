@@ -1,7 +1,7 @@
 from types import MethodType
 from typing import *  # noqa: F401 F403 (because of the argspec factory)
 from typing import Any, Dict, Union, Callable, Iterable, Optional
-from inspect import Parameter, unwrap, isabstract
+from inspect import Parameter, isabstract
 import inspect
 
 import wrapt

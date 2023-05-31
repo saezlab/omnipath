@@ -13,10 +13,7 @@ EVIDENCES_KEYS = ("positive", "negative", "directed", "undirected")
 
 
 def _must_have_evidences(df: pd.DataFrame) -> None:
-    """
-    Raises an error if the input data frame does not contain evidences.
-    """
-
+    """Raise an error if the input data frame does not contain evidences."""
     if "evidences" not in df.columns:
         raise ValueError("The input data frame must contain `evidences` column.")
 
@@ -48,9 +45,8 @@ def unnest_evidences(df: pd.DataFrame, col: str = "evidences") -> pd.DataFrame:
     ValueError
         If the input data frame does not contain "evidences" column.
     """
-
     for key in ("positive", "negative", "directed", "undirected"):
-        df[key] = df[col].apply(lambda x: x[key])
+        df[key] = df[col].apply(lambda x: x[key])  # noqa: B023
 
     return df
 
@@ -61,7 +57,7 @@ def filter_evidences(
     resources: Optional[Union[str, Iterable[str]]] = None,
     col: str = "evidences",
     target_col: Optional[str] = None,
-):
+) -> pd.DataFrame:
     """
     Filter evidences by dataset and resource.
 
@@ -85,7 +81,6 @@ def filter_evidences(
         The input data frame with the evidences filtered, with a new column
         depending on the `target_col` parameter.
     """
-
     target_col = target_col or col
     datasets = to_set(datasets)
     resources = to_set(resources)
@@ -133,7 +128,6 @@ def from_evidences(
         on the evidences in `col`. The records with no evidences from the
         specified datasets and resources will be removed.
     """
-
     evs_df = pd.DataFrame({"evidences": df[col]})
     evs_df = unnest_evidences(evs_df)
     evs_df["ce_positive"] = _curation_effort_from(evs_df, columns="positive")
@@ -195,7 +189,6 @@ def _ensure_unnested(
         data frame does not consist of a single nested evidences columns it
         will be still subsetted to the specified columns.
     """
-
     columns = list(to_set(columns))
     evs_df = df[columns]
 
@@ -217,10 +210,7 @@ def _from(
     func: Callable,
     columns: Union[str, Iterable[str]] = EVIDENCES_KEYS,
 ) -> List[Union[int, str]]:
-    """
-    Compile a new column by applying a function on evidences.
-    """
-
+    """Compile a new column by applying a function on evidences."""
     evs_df, columns = _ensure_unnested(df, columns)
 
     return [
@@ -233,10 +223,7 @@ def _curation_effort_from(
     df: pd.DataFrame,
     columns: Union[str, Iterable[str]] = EVIDENCES_KEYS,
 ) -> List[int]:
-    """
-    Curation effort from one or more evidences columns.
-    """
-
+    """Curation effort from one or more evidences columns."""
     return _from(
         df=df,
         func=lambda evs: sum(len(ev["references"]) + 1 for ev in evs),
@@ -248,9 +235,7 @@ def _resources_from(
     df: pd.DataFrame,
     columns: Union[str, Iterable[str]] = EVIDENCES_KEYS,
 ) -> List[str]:
-    """
-    Resources from one or more evidences columns.
-    """
+    """Resources from one or more evidences columns."""
 
     def extract_resources(evs: tuple) -> str:
         return ";".join(
@@ -270,9 +255,7 @@ def _references_from(
     columns: Union[str, Iterable[str]] = EVIDENCES_KEYS,
     prefix: bool = True,
 ) -> List[str]:
-    """
-    References from one or more evidences columns.
-    """
+    """Get references from one or more evidences columns."""
 
     def extract_references(evs: tuple) -> str:
         return ";".join(
@@ -323,7 +306,6 @@ def only_from(
         records with no evidences from the specified datasets or resources
         will be removed.
     """
-
     tmp_col = "evidences_filtered_tmp"
 
     _must_have_evidences(df)
