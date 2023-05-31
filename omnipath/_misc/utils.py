@@ -2,8 +2,7 @@ from typing import Any, Set, Iterable
 
 
 def to_set(value: Any) -> Set:
-    """
-    Makes sure `value` is a set, converts it if necessary.
+    """Make sure `value` is a set, convert it if necessary.
 
     Parameters
     ----------
@@ -13,7 +12,7 @@ def to_set(value: Any) -> Set:
     Returns
     -------
     `Set`
-        The `value` itself if it's alrady a set; a set of single element
+        The `value` itself if it's already a set; a set of single element
         if `value` is a simple type; a set of the elements in `value`
         if `value` is iterable; empty set if `value` is None.
 
@@ -23,7 +22,6 @@ def to_set(value: Any) -> Set:
         If `value` is not an iterable and not hashable, or if it's an iterable
         containing non hashable elements.
     """
-
     if isinstance(value, Set):
         return value
 
