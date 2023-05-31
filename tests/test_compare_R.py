@@ -1,5 +1,6 @@
 from typing import Iterable, Optional
 
+from conftest import RTester
 import pytest
 
 import numpy as np
@@ -7,7 +8,6 @@ import pandas as pd
 
 from omnipath.constants import License, Organism
 import omnipath as op
-from .conftest import RTester
 
 # in order to minimize server access, the tests are not parametrized
 # and the resources are chosen so that minimal data required is transferred
