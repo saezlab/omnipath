@@ -26,8 +26,10 @@ from omnipath._core.utils._docs import d
 from omnipath._core.requests._utils import (
     _ERROR_EMPTY_FMT,
     _inject_params,
+    _count_resources,
+    _count_references,
     _inject_api_method,
-    _strip_resource_label,
+    _strip_resource_label_df,
 )
 from omnipath.constants._pkg_constants import DEFAULT_FIELD, Key, Format, final
 from omnipath._core.downloader._downloader import Downloader
@@ -98,11 +100,14 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         return {q.param: q.doc for q in cls._query_type.value}
 
     def _get(self, **kwargs) -> pd.DataFrame:
+        self._last_param = {}
+        self._last_param["original"] = kwargs.copy()
         kwargs = self._modify_params(kwargs)
         kwargs = self._inject_fields(kwargs)
         kwargs, callback = self._convert_params(kwargs)
         kwargs = self._validate_params(kwargs)
         kwargs = self._finalize_params(kwargs)
+        self._last_param["final"] = kwargs.copy()
 
         res = self._downloader.maybe_download(
             self._query_type.endpoint, params=kwargs, callback=callback, is_final=False
@@ -111,7 +116,10 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         if self._downloader._options.convert_dtypes:
             res = self._convert_dtypes(res)
 
-        return self._post_process(res)
+        res = self._post_process(res)
+        self._last_param = {}
+
+        return res
 
     def _convert_params(
         self, params: Dict[str, Any]
@@ -156,10 +164,16 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
 
     def _inject_fields(self, params: Dict[str, Any]) -> Dict[str, Any]:
         try:
+            requested = params.get("fields", [])
+            defaults = getattr(DEFAULT_FIELD, self._query_type.name).value
+            if self._get_strict_evidences(params) and "evidences" not in requested:
+                defaults += ("evidences",)
+
+            params.pop("strict_evidences", None)
             _inject_params(
                 params,
                 key=self._query_type(Key.FIELDS.value).param,
-                value=getattr(DEFAULT_FIELD, self._query_type.name).value,
+                value=defaults,
             )
         except AttributeError:
             # no default field for this query
@@ -316,6 +330,13 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         """
         pass
 
+    @classmethod
+    def _get_strict_evidences(cls, params: Dict[str, Any]) -> bool:
+        strict_evidences = params.get("strict_evidences", None)
+        if strict_evidences is None:
+            strict_evidences = getattr(cls, "_strict_evidences", False)
+        return strict_evidences
+
     def __str__(self) -> str:
         return f"<{self.__class__.__name__}>"
 
@@ -345,28 +366,11 @@ class CommonPostProcessor(OmnipathRequestABC, ABC):
 
         Returns
         -------
-        :class:`pandas.DataFrame`
-            The modified dataframe.
+        The modified dataframe.
         """
-        if "references" in df:
-            df["references_stripped"] = _strip_resource_label(df["references"])
-            df["n_references"] = _strip_resource_label(
-                df["references"], func=lambda row: len(set(row))
-            )
-        if "sources" in df:
-            df["n_sources"] = df["sources"].astype(str).str.split(";").apply(len)
-            df["n_primary_sources"] = (
-                df["sources"]
-                .astype(str)
-                .str.split(";")
-                .apply(
-                    lambda row: len(
-                        [r for r in row if "_" not in r]
-                        if isinstance(row, Iterable)
-                        else 0
-                    )
-                )
-            )
+        _count_resources(df)
+        _count_references(df)
+        _strip_resource_label_df(df, col="references")
 
         return df
 

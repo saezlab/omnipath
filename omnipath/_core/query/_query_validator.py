@@ -12,6 +12,7 @@ from typing import (
     FrozenSet,
 )
 from urllib.parse import urljoin
+import sys
 import json
 import logging
 
@@ -217,7 +218,7 @@ class ServerValidatorMeta(EnumMeta, ABCMeta):  # noqa: D101
         vals = []
         for k in list(attributedict._member_names):
             vals.append(attributedict.pop(k, None))
-        attributedict._member_names = []
+        attributedict._member_names = [] if sys.version_info[1] < 11 else {}
 
         return vals
 

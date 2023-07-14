@@ -119,6 +119,7 @@ class Downloader:
             )
         )
         key = md5(bytes(req.url, encoding="utf-8")).hexdigest()
+        logging.debug(f"Looking up in cache: `{req.url}` ({key!r}).")
 
         if key in self._options.cache:
             logging.debug(f"Found data in cache `{self._options.cache}[{key!r}]`")

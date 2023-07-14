@@ -1,7 +1,7 @@
 from types import MethodType
 from typing import *  # noqa: F401 F403 (because of the argspec factory)
 from typing import Any, Dict, Union, Callable, Iterable, Optional
-from inspect import Parameter, unwrap, isabstract
+from inspect import Parameter, isabstract
 import inspect
 
 import wrapt
@@ -56,6 +56,7 @@ def _inject_api_method(
     """
 
     def argspec_factory(orig_fn: Callable) -> Callable:
+        orig_fn = getattr(orig_fn, "__func__", orig_fn)
         orig_params = inspect.signature(orig_fn).parameters
         # maintain the original signature if the subclass has overriden the method
         # this will lose the docstring of the original function
@@ -68,6 +69,15 @@ def _inject_api_method(
         annotations = {
             k: v for k, v in clazz._annotations().items() if k not in parameters
         }
+
+        for c in clazz.__mro__:
+            if c.__name__ == "InteractionRequest":
+                parameters["strict_evidences"] = Parameter(
+                    "strict_evidences",
+                    kind=Parameter.KEYWORD_ONLY,
+                    default=None,
+                    annotation=Optional[bool],
+                )
 
         sig = inspect.signature(lambda _: _)
         sig = sig.replace(
@@ -103,12 +113,11 @@ def _inject_api_method(
     def wrapper(wrapped, _instance, args, kwargs):
         return wrapped(*args, **kwargs)
 
-    if hasattr(clazz, "get") and not hasattr(clazz.get, "__wrapped__"):
-        # overriding in subclass
-        clazz.get = wrapper(unwrap(clazz.get))
-        return
+    from_class = hasattr(clazz, "get") and not hasattr(clazz.get, "__wrapped__")
+    func = clazz.get if from_class else _get_helper
+    func = getattr(func, "__func__", func)
 
-    clazz.get = wrapper(MethodType(_get_helper, clazz))
+    clazz.get = MethodType(wrapper(func), clazz)
 
 
 def _inject_params(
@@ -155,6 +164,37 @@ def _strip_resource_label(
         _split_unique_join(data.str.replace(r"[-\w]*:?(\d+)", r"\1", regex=True)),
         func=func,
     )
+
+
+def _strip_resource_label_df(
+    df: pd.DataFrame,
+    col: str,
+    func: Optional[Callable] = None,
+) -> None:
+    if col in df:
+        df[f"{col}_stripped"] = _strip_resource_label(df[col], func=func)
+
+
+def _count_references(df: pd.DataFrame) -> None:
+    if "references" in df:
+        df["n_references"] = _strip_resource_label(
+            df["references"], func=lambda row: len(set(row))
+        )
+
+
+def _count_resources(df: pd.DataFrame) -> None:
+    if "sources" in df:
+        df["n_sources"] = df["sources"].astype(str).str.split(";").apply(len)
+        df["n_primary_sources"] = (
+            df["sources"]
+            .astype(str)
+            .str.split(";")
+            .apply(
+                lambda row: len(
+                    [r for r in row if "_" not in r] if isinstance(row, Iterable) else 0
+                )
+            )
+        )
 
 
 _ERROR_EMPTY_FMT = (

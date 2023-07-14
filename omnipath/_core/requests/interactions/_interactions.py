@@ -9,6 +9,8 @@ from omnipath._core.utils._docs import d
 from omnipath._core.requests._utils import _inject_params
 from omnipath._core.requests._request import GraphLike, CommonPostProcessor
 from omnipath.constants._pkg_constants import Key, final
+from omnipath._core.requests.interactions._json import _json_cols_hook
+from omnipath._core.requests.interactions._evidences import only_from
 
 Datasets_t = Union[str, InteractionDataset, Sequence[str], Sequence[InteractionDataset]]
 
@@ -119,6 +121,23 @@ class InteractionRequest(CommonPostProcessor, GraphLike, ABC):
 
         return res
 
+    def _post_process(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = super()._post_process(df)
+        df = _json_cols_hook(df)
+
+        original_param = self._last_param["original"]
+        strict_evidences = self._get_strict_evidences(original_param)
+
+        if strict_evidences:
+            datasets = {ds.value for ds in self._datasets}
+            resources = self._last_param["final"].get("resources", ())
+            df = only_from(df, datasets=datasets, resources=resources)
+            fields_requested = original_param.get("fields", ())
+            if "evidences" not in fields_requested:
+                df.drop(columns="evidences", inplace=True)
+
+        return df
+
 
 class CommonParamFilter(InteractionRequest, ABC):
     """Filter which tries to remove some common invalid parameters from many interaction queries."""
@@ -193,6 +212,8 @@ class Dorothea(InteractionRequest):
     (TF)-target interactions from `DoRothEA <https://github.com/saezlab/DoRothEA>`__.
     """
 
+    _strict_evidences = True
+
     def __init__(self):
         super().__init__(InteractionDataset.DOROTHEA)
 
@@ -215,6 +236,8 @@ class CollecTRI(InteractionRequest):
     transcription factor (TF)-target interactions from
     `CollecTRI <https://github.com/saezlab/CollecTRI>`__.
     """
+
+    _strict_evidences = True
 
     def __init__(self):
         super().__init__(InteractionDataset.COLLECTRI)
