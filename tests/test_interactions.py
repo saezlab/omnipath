@@ -17,6 +17,7 @@ from omnipath._core.requests.interactions._interactions import (
     Dorothea,
     OmniPath,
     TFtarget,
+    CollecTRI,
     KinaseExtra,
     LigRecExtra,
     PathwayExtra,
@@ -124,6 +125,7 @@ class TestInteractions:
             OmniPath,
             PostTranslational,
             AllInteractions,
+            CollecTRI,
         ],
     )
     def test_interaction_get(
@@ -133,6 +135,8 @@ class TestInteractions:
         datasets = quote_plus(
             ",".join(sorted(d.value for d in interaction()._datasets))
         )
+        if getattr(interaction, "_strict_evidences", False):
+            pytest.skip("Test not yet implemented")
         fields = "fields=curation_effort%2Creferences%2Csources"
         if interaction is AllInteractions:
             fields += "%2Ctype"

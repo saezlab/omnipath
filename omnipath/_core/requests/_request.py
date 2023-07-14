@@ -366,10 +366,8 @@ class CommonPostProcessor(OmnipathRequestABC, ABC):
 
         Returns
         -------
-        :class:`pandas.DataFrame`
-            The modified dataframe.
+        The modified dataframe.
         """
-
         _count_resources(df)
         _count_references(df)
         _strip_resource_label_df(df, col="references")
