@@ -282,6 +282,7 @@ class InteractionsValidator(QueryValidatorMixin):  # noqa: D101
     HEADER: Str_t = ()
     LICENSE: License_t = ()
     LIMIT: Int_t = ()
+    LOOPS: Bool_t = ()
     ORGANISMS: Organism_t = ()
     PARTNERS: Strseq_t = ()
     PASSWORD: Str_t = ()
