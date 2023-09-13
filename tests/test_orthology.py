@@ -6,7 +6,7 @@ from omnipath._core.utils._homologene import download_homologene
 
 class TestHomologene:
     def test_download_homologene(self):
-        homologene = download_homologene()
+        homologene = download_homologene(9606, 10090)
 
         expected_shape = (17312, 2)
         actual_shape = homologene.shape
