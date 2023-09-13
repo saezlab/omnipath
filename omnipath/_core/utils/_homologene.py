@@ -45,12 +45,13 @@ def download_homologene(source_organism, target_organism, id_type="genesymbol"):
 
     Parameters
     ----------
-    source_organism : str
-        Source organism name.
-    target_organism : str
-        Target organism name.
+    source_organism : int, str
+        Source organism NCBI Taxonomy ID.
+    target_organism : int, str
+        Target organism NCBI Taxonomy ID.
     id_type : str
-        Type of ID to use for homology conversion. Can be one of 'genesymbol', 'gene_id'.
+        Type of ID to use for homology conversion.
+        Can be one of 'genesymbol', 'gene_id'.
 
     Returns
     -------
@@ -58,9 +59,11 @@ def download_homologene(source_organism, target_organism, id_type="genesymbol"):
 
     """
     homologene = _get_homologene_raw()
+    s_taxid = str(source_organism)
+    t_taxid = str(target_organism)
 
-    source_df = homologene[(homologene["ncbi_taxid"] == source_organism)][[id_type]]
-    target_df = homologene[(homologene["ncbi_taxid"] == target_organism)][[id_type]]
+    source_df = homologene[(homologene["ncbi_taxid"] == s_taxid)][[id_type]]
+    target_df = homologene[(homologene["ncbi_taxid"] == t_taxid)][[id_type]]
 
     homologene = pd.merge(
         source_df,
