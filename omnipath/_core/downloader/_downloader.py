@@ -2,11 +2,12 @@ from io import BytesIO
 from copy import copy
 from typing import Any, Mapping, Callable, Optional
 from hashlib import md5
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 import json
 import logging
+import traceback
 
-from requests import Request, Session, PreparedRequest
+from requests import Request, Session, HTTPError, PreparedRequest
 from tqdm.auto import tqdm
 from urllib3.util import Retry
 from requests.adapters import HTTPAdapter
@@ -106,30 +107,52 @@ class Downloader:
                 f"Expected `callback` to be `callable`, found `{type(callback).__name__}`."
             )
 
-        if not is_final:
-            url = urljoin(self._options.url, url)
-
-        req = self._session.prepare_request(
-            Request(
-                "GET",
-                url,
-                params=params,
-                headers={"User-agent": "omnipathdb-user"},
-            )
-        )
-        key = md5(bytes(req.url, encoding="utf-8")).hexdigest()
-        logging.debug(f"Looking up in cache: `{req.url}` ({key!r}).")
-
-        if key in self._options.cache:
-            logging.debug(f"Found data in cache `{self._options.cache}[{key!r}]`")
-            res = self._options.cache[key]
+        if is_final:
+            urls = (url,) if isinstance(url, str) else url
         else:
-            res = callback(self._download(req))
-            if cache:
-                logging.debug(f"Caching result to `{self._options.cache}[{key!r}]`")
-                self._options.cache[key] = res
+            urls = [
+                urljoin(baseurl, url)
+                for baseurl in (
+                    (self._options.url,) + tuple(self._options.fallback_urls)
+                )
+            ]
+
+        res = None
+
+        for the_url in urls:
+            urlp = urlparse(the_url)
+            domain = f"{urlp.scheme}://{urlp.netloc}/"
+            logging.debug(f"Attempting server `{domain}`.")
+            req = self._session.prepare_request(
+                Request(
+                    "GET",
+                    the_url,
+                    params=params,
+                    headers={"User-agent": "omnipathdb-user"},
+                )
+            )
+            key = md5(bytes(req.url, encoding="utf-8")).hexdigest()
+            logging.debug(f"Looking up in cache: `{req.url}` ({key!r}).")
+
+            if key in self._options.cache:
+                logging.debug(f"Found data in cache `{self._options.cache}[{key!r}]`")
+                res = self._options.cache[key]
             else:
-                logging.debug("Not caching the results")
+                try:
+                    res = self._download(req)
+                except HTTPError:
+                    logging.warn(f"Failed to download from `{domain}`.")
+                    logging.warn(traceback.format_exc())
+                    continue
+                res = callback(res)
+                if cache:
+                    logging.debug(f"Caching result to `{self._options.cache}[{key!r}]`")
+                    self._options.cache[key] = res
+                else:
+                    logging.debug("Not caching the results")
+
+        if res is None:
+            raise
 
         return res
 
