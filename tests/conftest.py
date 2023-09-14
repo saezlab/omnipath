@@ -52,6 +52,7 @@ def options() -> "Options":
     opt = Options.from_config()
     opt.cache = "memory"
     opt.progress_bar = False
+    opt.fallback_urls = ()
     return opt
 
 
@@ -97,6 +98,7 @@ def server_url():
 
 @pytest.fixture(scope="function")
 def downloader(options) -> "Downloader":
+    options.fallback_urls = ()
     return Downloader(options)
 
 

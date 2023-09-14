@@ -18,6 +18,8 @@ from omnipath._core.requests._utils import _split_unique_join, _strip_resource_l
 from omnipath.constants._pkg_constants import Key, Endpoint
 from omnipath._core.requests._annotations import _MAX_N_PROTS
 
+options.fallback_urls = ()
+
 
 class TestEnzsub:
     def test_str_repr(self):

@@ -12,6 +12,8 @@ from omnipath._core.utils._options import Options
 from omnipath.constants._pkg_constants import UNKNOWN_SERVER_VERSION, Endpoint
 from omnipath._core.downloader._downloader import Downloader, _get_server_version
 
+opt.fallback_urls = ()
+
 
 class TestDownloader:
     def test_options_wrong_type(self):

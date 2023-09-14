@@ -28,6 +28,8 @@ from omnipath._core.requests.interactions._interactions import (
     lncRNAmRNA,
 )
 
+options.fallback_urls = ()
+
 
 class TestInteractions:
     def test_all_excluded_excluded(self):

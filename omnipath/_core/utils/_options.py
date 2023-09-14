@@ -89,6 +89,11 @@ class Options:
         validator=[attr.validators.instance_of(str), _is_valid_url],
         on_setattr=attr.setters.validate,
     )
+    fallback_urls: tuple[str] = attr.ib(
+        default=DEFAULT_OPTIONS.fallback_urls,
+        converter=(lambda val: (val,) if isinstance(val, str) else tuple(val)),
+        on_setattr=attr.setters.convert,
+    )
     license: License = attr.ib(
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of((str, License))),

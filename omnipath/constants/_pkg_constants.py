@@ -31,6 +31,7 @@ class DEFAULT_OPTIONS:
     """Default options for :attr:`omnipath.options`."""
 
     url: str = "https://omnipathdb.org"
+    fallback_urls: tuple[str] = ("http://no-tls.omnipathdb.org",)
     license: Optional[License] = None
     num_retries: int = 3
     timeout: int = 600

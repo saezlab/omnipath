@@ -101,6 +101,7 @@ class TestOptions:
         options.timeout = 1337
         options.license = License.COMMERCIAL
         options.password = "foobarbaz"
+        options.fallback_urls = DEFAULT_OPTIONS.fallback_urls
         options.write()
 
         new_opt = Options.from_config()
@@ -118,6 +119,7 @@ class TestOptions:
 
     def test_write_new_section(self, options: Options, config_backup):
         options.timeout = 42
+        options.fallback_urls = DEFAULT_OPTIONS.fallback_urls
         options.write("https://foo.bar")
 
         new_opt = Options.from_config("https://foo.bar")
