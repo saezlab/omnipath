@@ -150,6 +150,7 @@ class Downloader:
                     self._options.cache[key] = res
                 else:
                     logging.debug("Not caching the results")
+                break
 
         if res is None:
             raise
