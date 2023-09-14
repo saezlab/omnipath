@@ -66,7 +66,6 @@ class Downloader:
             Endpoint.RESOURCES.s,
             params={Key.FORMAT.s: Format.JSON.s},
             callback=json.load,
-            is_final=False,
         )
 
     def maybe_download(
@@ -75,7 +74,7 @@ class Downloader:
         callback: Callable[[BytesIO], Any],
         params: Optional[Mapping[str, str]] = None,
         cache: bool = True,
-        is_final: bool = True,
+        is_final: bool = False,
         **_,
     ) -> Any:
         """
@@ -211,7 +210,6 @@ def _get_server_version(options: Options) -> str:
                 callback,
                 params={Key.FORMAT.s: Format.TEXT.s},
                 cache=False,
-                is_final=False,
             )
     except Exception as e:
         logging.debug(f"Unable to get server version. Reason: `{e}`")

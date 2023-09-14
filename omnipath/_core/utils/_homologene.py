@@ -18,6 +18,7 @@ def _get_homologene_raw():
         dwnld.maybe_download(
             HOMOLOGENE_URL,
             callback=pd.read_table,
+            is_final=True,
         )
         .astype(str)
         .rename(
@@ -36,7 +37,11 @@ def _get_homologene_raw():
 def show_homologene():
     """Show the homologene taxa data"""
     dwnld = Downloader()
-    return dwnld.maybe_download(RAW_TAXA_URL, callback=pd.read_table)
+    return dwnld.maybe_download(
+        RAW_TAXA_URL,
+        callback=pd.read_table,
+        is_final=True,
+    )
 
 
 def download_homologene(source_organism, target_organism, id_type="genesymbol"):

@@ -164,7 +164,7 @@ class ServerValidatorMeta(EnumMeta, ABCMeta):  # noqa: D101
                 try:
                     logging.debug("Attempting to construct classes from the server")
                     res = Downloader(opt).maybe_download(
-                        urljoin(urljoin(opt.url, f"{Key.QUERIES.s}/"), endpoint),
+                        urljoin(urljoin(f"{Key.QUERIES.s}/"), endpoint),
                         callback=json.load,
                         params={Key.FORMAT.s: Format.JSON.s},
                     )

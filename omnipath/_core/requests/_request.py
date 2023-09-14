@@ -110,7 +110,9 @@ class OmnipathRequestABC(ABC, metaclass=OmnipathRequestMeta):
         self._last_param["final"] = kwargs.copy()
 
         res = self._downloader.maybe_download(
-            self._query_type.endpoint, params=kwargs, callback=callback, is_final=False
+            self._query_type.endpoint,
+            params=kwargs,
+            callback=callback,
         )
 
         if self._downloader._options.convert_dtypes:

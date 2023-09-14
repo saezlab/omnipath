@@ -84,7 +84,6 @@ class Intercell(OrganismGenesymbolsRemover):
             Key.INTERCELL_SUMMARY.s,
             params={Key.FORMAT.s: Format.JSON.s},
             callback=self._json_reader,
-            is_final=False,
         )
 
         if col not in metadata.columns:
