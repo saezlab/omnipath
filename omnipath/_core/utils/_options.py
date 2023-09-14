@@ -1,4 +1,4 @@
-from typing import Any, Union, ClassVar, NoReturn, Optional
+from typing import Any, Tuple, Union, ClassVar, NoReturn, Optional
 from pathlib import Path
 from urllib.parse import urlparse
 import configparser
@@ -89,7 +89,7 @@ class Options:
         validator=[attr.validators.instance_of(str), _is_valid_url],
         on_setattr=attr.setters.validate,
     )
-    fallback_urls: tuple[str] = attr.ib(
+    fallback_urls: Tuple[str] = attr.ib(
         default=DEFAULT_OPTIONS.fallback_urls,
         converter=(lambda val: (val,) if isinstance(val, str) else tuple(val)),
         on_setattr=attr.setters.convert,
