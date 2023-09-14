@@ -60,7 +60,7 @@ class Key(PrettyEnumMixin):  # noqa: D101
     QUERIES = "queries"
     FIELDS = "fields"
     PASSWORD = "password"
-
+    LOOPS = "loops"
     INTERCELL_SUMMARY = "intercell_summary"
     GENERIC_CATEGORIES = "generic_categories"
     CATEGORY = "category"
