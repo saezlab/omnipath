@@ -1,5 +1,5 @@
 from os import environ
-from typing import Optional, Tuple
+from typing import Tuple, Optional
 from pathlib import Path
 
 from omnipath.constants import License, Organism
