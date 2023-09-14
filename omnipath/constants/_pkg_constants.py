@@ -1,5 +1,5 @@
 from os import environ
-from typing import Optional
+from typing import Optional, Tuple
 from pathlib import Path
 
 from omnipath.constants import License, Organism
@@ -31,7 +31,7 @@ class DEFAULT_OPTIONS:
     """Default options for :attr:`omnipath.options`."""
 
     url: str = "https://omnipathdb.org"
-    fallback_urls: tuple[str] = ("http://no-tls.omnipathdb.org",)
+    fallback_urls: Tuple[str] = ("http://no-tls.omnipathdb.org",)
     license: Optional[License] = None
     num_retries: int = 3
     timeout: int = 600
