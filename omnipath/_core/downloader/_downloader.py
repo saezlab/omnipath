@@ -7,10 +7,11 @@ import json
 import logging
 import traceback
 
-from requests import Request, Session, HTTPError, PreparedRequest
+from requests import Request, Session, PreparedRequest
 from tqdm.auto import tqdm
 from urllib3.util import Retry
 from requests.adapters import HTTPAdapter
+from requests.exceptions import RequestException
 
 from omnipath._core.utils._options import Options
 from omnipath.constants._pkg_constants import (
@@ -140,7 +141,7 @@ class Downloader:
             else:
                 try:
                     res = self._download(req)
-                except HTTPError:
+                except RequestException:
                     logging.warn(f"Failed to download from `{domain}`.")
                     logging.warn(traceback.format_exc())
                     continue
