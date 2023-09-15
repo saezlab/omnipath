@@ -6,7 +6,7 @@ import logging
 
 import pytest
 
-from pandas.api.types import is_object_dtype, is_categorical_dtype
+from pandas.api.types import is_object_dtype
 import numpy as np
 import pandas as pd
 
@@ -144,7 +144,7 @@ class TestEnzsub:
         options.convert_dtypes = True
 
         res = Enzsub.get()
-        assert is_categorical_dtype(res["modification"])
+        assert isinstance(res["modification"].dtype, pd.CategoricalDtype)
         assert requests_mock.called_once
 
 

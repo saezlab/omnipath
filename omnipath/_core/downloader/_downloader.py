@@ -142,8 +142,8 @@ class Downloader:
                 try:
                     res = self._download(req)
                 except RequestException:
-                    logging.warn(f"Failed to download from `{domain}`.")
-                    logging.warn(traceback.format_exc())
+                    logging.warning(f"Failed to download from `{domain}`.")
+                    logging.warning(traceback.format_exc())
                     continue
                 res = callback(res)
                 if cache:

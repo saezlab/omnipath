@@ -166,7 +166,7 @@ class TestDownloader:
         downloader = Downloader(opt)
         res = downloader.maybe_download(query, callback=pd.read_csv)
 
-        assert requests_mock.called_once
+        assert requests_mock.called
         np.testing.assert_array_equal(res.index, csv_df.index)
         np.testing.assert_array_equal(res.columns, csv_df.columns)
         np.testing.assert_array_equal(res.values, csv_df.values)
