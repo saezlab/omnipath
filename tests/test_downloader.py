@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 import logging
 
 import pytest
+import requests
 
 import numpy as np
 import pandas as pd
@@ -141,7 +142,29 @@ class TestDownloader:
         requests_mock.register_uri("GET", url, content=csv_data)
         csv_df = pd.read_csv(BytesIO(csv_data))
 
-        res = downloader.maybe_download(endpoint, callback=pd.read_csv, is_final=False)
+        res = downloader.maybe_download(endpoint, callback=pd.read_csv)
+
+        assert requests_mock.called_once
+        np.testing.assert_array_equal(res.index, csv_df.index)
+        np.testing.assert_array_equal(res.columns, csv_df.columns)
+        np.testing.assert_array_equal(res.values, csv_df.values)
+
+    def test_fallback_urls(self, requests_mock, csv_data: bytes):
+        query = "annotations?resources=PROGENy"
+        opt = Options(url="https://wrong.omnipathdb.org/")
+        requests_mock.register_uri(
+            "GET",
+            urljoin(opt.url, query),
+            exc=requests.exceptions.ConnectionError,
+        )
+        requests_mock.register_uri(
+            "GET",
+            urljoin(opt.fallback_urls[0], query),
+            content=csv_data,
+        )
+        csv_df = pd.read_csv(BytesIO(csv_data))
+        downloader = Downloader(opt)
+        res = downloader.maybe_download(query, callback=pd.read_csv)
 
         assert requests_mock.called_once
         np.testing.assert_array_equal(res.index, csv_df.index)
