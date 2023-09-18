@@ -1,5 +1,8 @@
 from omnipath._core.cache import clear_cache
-from omnipath._core.utils import options  # from_first in isort is important here
+from omnipath._core.utils import (  # from_first in isort is important here
+    static,
+    options,
+)
 from omnipath._core.downloader._downloader import _get_server_version
 import omnipath.requests as requests
 import omnipath.constants as constants
