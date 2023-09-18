@@ -32,6 +32,7 @@ class DEFAULT_OPTIONS:
 
     url: str = "https://omnipathdb.org"
     fallback_urls: Tuple[str] = ("http://no-tls.omnipathdb.org",)
+    static_url: str = "http://no-tls.static.omnipathdb.org/resources"
     license: Optional[License] = None
     num_retries: int = 3
     timeout: int = 600

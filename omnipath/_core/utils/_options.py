@@ -94,6 +94,11 @@ class Options:
         converter=(lambda val: (val,) if isinstance(val, str) else tuple(val)),
         on_setattr=attr.setters.convert,
     )
+    static_url: str = attr.ib(
+        default=DEFAULT_OPTIONS.static_url,
+        validator=[attr.validators.instance_of(str), _is_valid_url],
+        on_setattr=attr.setters.validate,
+    )
     license: License = attr.ib(
         default=None,
         validator=attr.validators.optional(attr.validators.instance_of((str, License))),
