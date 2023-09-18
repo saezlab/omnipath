@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Set, Dict, Tuple, Union, Mapping, Iterable, Optional, Sequence
+import logging
 
 import pandas as pd
 
@@ -131,6 +132,12 @@ class InteractionRequest(CommonPostProcessor, GraphLike, ABC):
         if strict_evidences:
             datasets = {ds.value for ds in self._datasets}
             resources = self._last_param["final"].get("resources", ())
+            logging.debug(
+                f"Keeping evidences only from datasets: "
+                f"{', '.join(datasets) if datasets else 'any'}; "
+                "and resources: "
+                f"{', '.join(resources) if resources else 'any'}."
+            )
             df = only_from(df, datasets=datasets, resources=resources)
             fields_requested = original_param.get("fields", ())
             if "evidences" not in fields_requested:
