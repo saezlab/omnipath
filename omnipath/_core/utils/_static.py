@@ -14,13 +14,12 @@ from omnipath._core.downloader._downloader import Downloader
 
 def static_tables() -> pd.DataFrame:
     """
-    A list of static tables available from OmniPath
+    List the static tables available from OmniPath
 
     Returns
     -------
     A data frame with metadata about the static tables.
     """
-
     refile = re.compile(
         r'<a href="[^"]+">([^<]+)</a>'
         r"\s+(\d{2}-\w+-\d{4}) (\d{2}:\d{2})"
@@ -103,7 +102,6 @@ def static_table(
     -------
     A data frame with the requested resource.
     """
-
     msg = (
         f"Accessing `{resource}` as a static table. This is not the "
         "recommended way to access OmniPath data; it is only a backup "
@@ -111,7 +109,7 @@ def static_table(
         "experiencing issues."
     )
     logging.warning(msg)
-    warnings.warn(msg)
+    warnings.warn(msg)  # noqa: B028
 
     organism = str(organism)
     query_l = query.lower()
@@ -166,13 +164,13 @@ def static_table(
     }
     omnipath_req._wide = wide
     omnipath_req._datasets = {InteractionDataset(d) for d in datasets}
-    logging.debug(f"Static table: converting dtypes.")
+    logging.debug("Static table: converting dtypes.")
     result = omnipath_req._convert_dtypes(result)
-    logging.debug(f"Static table: post-pocessing.")
+    logging.debug("Static table: post-pocessing.")
     result = omnipath_req._post_process(result)
 
     if resource_l == "dorothea":
-        logging.debug(f"Static table: filtering for DoRothEA confidence levels.")
+        logging.debug("Static table: filtering for DoRothEA confidence levels.")
         dorothea_levels = set(dorothea_levels)
         result = result[result.dorothea_level.isin(dorothea_levels)]
 
