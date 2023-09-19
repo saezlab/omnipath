@@ -1,15 +1,15 @@
-from typing import List, Literal, Optional, Union
-
-import re
-import warnings
-import logging
+from typing import List, Union, Literal, Optional
 from functools import partial
+import re
+import logging
+import warnings
 
 import requests
+
 import pandas as pd
 
-from omnipath._core.downloader._downloader import Downloader
 from omnipath._core.utils import _options as opt
+from omnipath._core.downloader._downloader import Downloader
 
 
 def static_tables() -> pd.DataFrame:
@@ -23,18 +23,18 @@ def static_tables() -> pd.DataFrame:
 
     refile = re.compile(
         r'<a href="[^"]+">([^<]+)</a>'
-        r'\s+(\d{2}-\w+-\d{4}) (\d{2}:\d{2})'
-        r'\s+(\d+)[\r\n]*'
+        r"\s+(\d{2}-\w+-\d{4}) (\d{2}:\d{2})"
+        r"\s+(\d+)[\r\n]*"
     )
 
-    req = requests.get(opt.options.static_url, stream = True)
+    req = requests.get(opt.options.static_url, stream=True)
 
     result = pd.DataFrame(
         [
-            refile.match(line.decode('utf-8')).groups()
+            refile.match(line.decode("utf-8")).groups()
             for line in req.raw.readlines()[5:-2]
         ],
-        columns = ["name", "date", "time", "size"],
+        columns=["name", "date", "time", "size"],
     )
 
     result["url"] = [f"{opt.options.static_url}/{name}" for name in result.name]
@@ -43,26 +43,26 @@ def static_tables() -> pd.DataFrame:
         [
             result,
             result.name.str.extract(
-                r'(?P<query>[\w]+)_'
-                r'(?P<resource>\w+)_'
-                r'(?P<organism>\d+)\.tsv\.gz',
-                expand = True,
-            )
+                r"(?P<query>[\w]+)_"
+                r"(?P<resource>\w+)_"
+                r"(?P<organism>\d+)\.tsv\.gz",
+                expand=True,
+            ),
         ],
-        axis = 1,
+        axis=1,
     )
 
     return result
 
 
 def static_table(
-        query: Literal["annotations", "interactions"],
-        resource: str,
-        organism: Union[int, str],
-        strict_evidences: bool = True,
-        dorothea_levels: Optional[List[Literal["A", "B", "C", "D"]]] = None,
-        wide: bool = True,
-    ) -> pd.DataFrame:
+    query: Literal["annotations", "interactions"],
+    resource: str,
+    organism: Union[int, str],
+    strict_evidences: bool = True,
+    dorothea_levels: Optional[List[Literal["A", "B", "C", "D"]]] = None,
+    wide: bool = True,
+) -> pd.DataFrame:
     """
     Download a static table from OmniPath.
 
@@ -120,28 +120,25 @@ def static_table(
     datasets = () if resources else (resource_l,)
 
     if query_l == "annotations":
-
-        from omnipath._core.requests._annotations import (
-            Annotations as req_cls,
-        )
+        from omnipath._core.requests._annotations import Annotations as req_cls
 
     elif query_l == "interactions":
-
         from omnipath._core.requests.interactions._interactions import (
             AllInteractions as req_cls,
+        )
+        from omnipath._core.requests.interactions._interactions import (
             InteractionDataset,
         )
 
     s = static_tables()
 
     s = s[
-        (s["query"] == query_l) &
-        (s.resource.str.lower() == resource_l) &
-        (s.organism == organism)
+        (s["query"] == query_l)
+        & (s.resource.str.lower() == resource_l)
+        & (s.organism == organism)
     ].reset_index()
 
     if s.shape[0] == 0:
-
         msg = (
             f"No static table is available for query `{query}`, resource "
             f"`{resource}` and organism `{organism}`. For a list of the "
@@ -175,7 +172,6 @@ def static_table(
     result = omnipath_req._post_process(result)
 
     if resource_l == "dorothea":
-
         logging.debug(f"Static table: filtering for DoRothEA confidence levels.")
         dorothea_levels = set(dorothea_levels)
         result = result[result.dorothea_level.isin(dorothea_levels)]
