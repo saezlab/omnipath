@@ -11,6 +11,9 @@ import json
 import pickle
 import logging
 
+from pytest_socket import disable_socket
+
+disable_socket()
 import pytest
 import requests
 
