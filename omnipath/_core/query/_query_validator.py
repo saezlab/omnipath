@@ -352,9 +352,9 @@ class IntercellValidator(QueryValidatorMixin):  # noqa: D101
 
 
 __all__ = [
-    EnzsubValidator,
-    InteractionsValidator,
-    ComplexesValidator,
-    AnnotationsValidator,
-    IntercellValidator,
+    "EnzsubValidator",
+    "InteractionsValidator",
+    "ComplexesValidator",
+    "AnnotationsValidator",
+    "IntercellValidator",
 ]
