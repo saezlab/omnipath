@@ -225,7 +225,7 @@ def _get_server_version(options: Options) -> str:
         with Options.from_options(
             options,
             num_retries=0,
-            timeout=0.1,
+            timeout=3.0,
             cache=None,
             progress_bar=False,
             chunk_size=1024,
