@@ -342,6 +342,20 @@ class lncRNAmRNA(CommonParamFilter):
     def __init__(self):
         super().__init__(InteractionDataset.LNCRNA_MRNA)
 
+@final
+class SmallMolecule(CommonParamFilter):
+    """
+    Request interactions from the `small molecule-protein` dataset.
+
+    Imports the `dataset
+    <https://omnipathdb.org/interactions?datasets=small_molecule_protein>`__ which contains
+    small molecule-protein interactions.
+    """
+
+    def __init__(self):
+        super().__init__(InteractionDataset.SMALL_MOLECULE)
+
+
 
 @final
 class OmniPath(InteractionRequest):
@@ -510,4 +524,5 @@ __all__ = [
     miRNA,
     lncRNAmRNA,
     PostTranslational,
+    SmallMolecule,
 ]

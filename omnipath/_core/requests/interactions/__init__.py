@@ -19,4 +19,5 @@ from omnipath._core.requests.interactions._interactions import (
     PostTranslational,
     miRNA,
     lncRNAmRNA,
+    SmallMolecule,
 )
