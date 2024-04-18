@@ -21,7 +21,6 @@ from omnipath.constants._pkg_constants import (
     Endpoint,
 )
 
-
 class Downloader:
     """
     Class which performs a GET request to the server in order to retrieve some remote resources.
@@ -225,7 +224,7 @@ def _get_server_version(options: Options) -> str:
         with Options.from_options(
             options,
             num_retries=0,
-            timeout=3.0,
+            timeout=(1.0, 3.0),
             cache=None,
             progress_bar=False,
             chunk_size=1024,

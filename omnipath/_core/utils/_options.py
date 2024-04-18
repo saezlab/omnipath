@@ -12,6 +12,8 @@ from omnipath.constants._pkg_constants import DEFAULT_OPTIONS
 
 def _is_positive(_instance, attribute: attr.Attribute, value: int) -> NoReturn:
     """Check whether the ``value`` is positive."""
+    if isinstance(value, tuple):
+        return all(_is_positive(_instance, attribute, v) for v in value)
     if value <= 0:
         raise ValueError(
             f"Expected `{attribute.name}` to be positive, found `{value}`."
@@ -134,9 +136,9 @@ class Options:
         validator=[attr.validators.instance_of(int), _is_non_negative],
         on_setattr=attr.setters.validate,
     )
-    timeout: Union[int, float] = attr.ib(
+    timeout: Union[int, float, Tuple[float, float]] = attr.ib(
         default=DEFAULT_OPTIONS.timeout,
-        validator=[attr.validators.instance_of((int, float)), _is_positive],
+        validator=[attr.validators.instance_of((int, float, tuple)), _is_positive],
         on_setattr=attr.setters.validate,
     )
     chunk_size: int = attr.ib(
