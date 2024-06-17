@@ -28,11 +28,11 @@ jobs:
             PYTHON: ${{ matrix.python }}
 
         steps:
-        -   uses: actions/checkout@v3
+        -   uses: actions/checkout@v4
             with:
                 fetch-depth: 0
         -   name: Set up Python ${{ matrix.python }}
-            uses: actions/setup-python@v4
+            uses: actions/setup-python@v5
             with:
                 python-version: ${{ matrix.python }}
 
@@ -41,7 +41,7 @@ jobs:
             run: |
                 echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
         -   name: Cache pip
-            uses: actions/cache@v3
+            uses: actions/cache@v4
             with:
                 path: ${{ steps.pip-cache.outputs.dir }}
                 key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -52,11 +52,11 @@ jobs:
 
         -   name: Install R
             if: matrix.test_server
-            uses: r-lib/actions/setup-r@v1
+            uses: r-lib/actions/setup-r@v2
             with:
-                r-version: 4.0.3
+                r-version: 4.4.1
         -   name: Get R cache dir
-            uses: actions/cache@v3
+            uses: actions/cache@v4
             if: matrix.test_server
             with:
                 path: ~/.local/share/renv
