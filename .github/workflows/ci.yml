@@ -4,10 +4,10 @@ on:
     schedule:
     -   cron: 00 00 * * 1  # run every Monday at 00:00
     push:
-        branches: [master]
+        branches: [main]
         tags: [v*]
     pull_request:
-        branches: [master]
+        branches: [main]
 
 jobs:
     build:
