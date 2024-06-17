@@ -342,6 +342,7 @@ class lncRNAmRNA(CommonParamFilter):
     def __init__(self):
         super().__init__(InteractionDataset.LNCRNA_MRNA)
 
+
 @final
 class SmallMolecule(CommonParamFilter):
     """
@@ -354,7 +355,6 @@ class SmallMolecule(CommonParamFilter):
 
     def __init__(self):
         super().__init__(InteractionDataset.SMALL_MOLECULE)
-
 
 
 @final

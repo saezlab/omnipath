@@ -21,6 +21,7 @@ from omnipath.constants._pkg_constants import (
     Endpoint,
 )
 
+
 class Downloader:
     """
     Class which performs a GET request to the server in order to retrieve some remote resources.

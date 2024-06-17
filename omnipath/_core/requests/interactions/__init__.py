@@ -14,10 +14,10 @@ from omnipath._core.requests.interactions._interactions import (
     KinaseExtra,
     LigRecExtra,
     PathwayExtra,
+    SmallMolecule,
     AllInteractions,
     Transcriptional,
     PostTranslational,
     miRNA,
     lncRNAmRNA,
-    SmallMolecule,
 )
