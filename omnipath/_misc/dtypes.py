@@ -8,7 +8,7 @@ __all__ = ["auto_dtype"]
 TRUE = frozenset(("true", "t", "yes", "y"))
 FALSE = frozenset(("false", "f", "no", "n"))
 BOOL = frozenset().union(TRUE, FALSE)
-NA = frozenset(("na", "NA", "NaN", "none", "None", None, pd.NA, pd.NaT, np.NAN, np.nan))
+NA = frozenset(("na", "NA", "NaN", "none", "None", None, pd.NA, pd.NaT, np.nan))
 INT = frozenset(
     ("int64", "uint64", "int32", "uint32", "int16", "uint16", "int8", "uint8")
 )
