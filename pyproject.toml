@@ -1,31 +1,185 @@
 [build-system]
-requires = ['setuptools', 'setuptools_scm', 'wheel']
-build-backend = 'setuptools.build_meta'
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.black]
-line-length = 88
-target-version = ['py38']
-include = '\.pyi?$'
-exclude = '''
+[project]
+name = "omnipath"
+version = "1.0.8"
+description = "Python client for the OmniPath web service"
+license = "MIT"
+authors = [
+    { name = "Michal Klein", email = "michalk@apple.com" },
+    { name = "Dénes Türei", email = "turei.denes@gmail.com" },
+]
+maintainers = [
+    { name = "Dénes Türei", email = "turei.denes@gmail.com" },
+]
+readme = "README.rst"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Natural Language :: English",
+    "Typing :: Typed",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+keywords = [
+    "protein",
+    "mRNA",
+    "miRNA",
+    "DNA",
+    "signaling",
+    "SignaLink",
+    "SIGNOR",
+    "InnateDB",
+    "IntAct",
+    "Reactome",
+    "MPPI",
+    "NCI-PID",
+    "DIP",
+    "MatrixDB",
+    "PANTHER",
+    "PhosphoSite",
+    "PhosphoPoint",
+    "DEPOD",
+    "SPIKE",
+    "KEGG",
+    "Autophagy",
+    "ARN",
+    "NRF2ome",
+    "Guide to Pharmacology",
+    "UniProt",
+    "BioPAX",
+    "Ensembl",
+    "Surfaceome",
+    "Exocarta",
+    "Vesiclepedia",
+    "Matrisome",
+    "Human Protein Atlas",
+    "Compleat",
+    "CORUM",
+    "ComplexPortal",
+    "BioGRID",
+    "STRING",
+    "ICELLNET",
+    "Cell Surface Protein Atlas",
+    "COSMIC",
+    "Cancer Gene Census",
+    "IntOGen",
+    "TopDB",
+    "iTALK",
+    "Human Plasma Membrane Receptome",
+    "EMBRACE",
+    "ELM",
+    "phospho.ELM",
+    "CancerSEA",
+    "ComPPI",
+    "CellPhoneDB",
+    "DGIdb",
+    "DisGeNet",
+    "PAZAR",
+    "ORegAnno",
+    "TRED",
+    "DoRothEA",
+    "TRRD",
+    "CPAD",
+    "regulation",
+    "phosphorylation",
+    "kinase",
+    "phosphatase",
+    "dephosphorylation",
+    "directed graph",
+    "annotations",
+    "cancer",
+    "complexes",
+    "intercellular communication",
+    "HGNC",
+    "GPCRdb",
+    "MSigDB",
+    "GSEA",
+    "Phobius",
+    "Phosphatome",
+    "NetPath",
+    "gene",
+    "gene symbol",
+    "mouse",
+    "rat",
+    "HomoloGene",
+    "integrin",
+    "adhesion",
+    "receptor",
+    "ligand",
+    "transporter",
+    "ion channel",
+    "disease",
+    "activity flow",
+    "transcription",
+    "PPI",
+    "subcellular localization",
+    "pathway",
+    "signaling pathway",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "attrs>=20.2.0",
+    "docrep>=0.3.1",
+    "inflect>=4.1.0",
+    "packaging>=24.2",
+    "pandas>=1.2.0",
+    "requests>=2.24.0",
+    "tqdm>=4.51.0",
+    "typing-extensions>=3.7.4.3",
+    "urllib3>=1.26.0",
+    "wrapt>=1.12.0",
+]
 
-(
-  /(
-      \.eggs
-    | \.git
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
+[project.optional-dependencies]
+docs = [
+    "attrs>=20.2.0",
+    "docrep>=0.3.1",
+    "inflect>=4.1.0",
+    "packaging>=24.2",
+    "pandas>=1.2.0",
+    "requests>=2.24.0",
+    "sphinx>=4",
+    "sphinx-autodoc-annotation>=1.0.post1",
+    "sphinx-autodoc-typehints>=1.10.3",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-last-updated-by-git>=0.3.8",
+    "sphinx-paramlinks>=0.6.0",
+    "sphinx-rtd-theme>=3.0.2",
+    "sphinx-toolbox>=3.9.0",
+    "tqdm>=4.51.0",
+    "typing-extensions>=3.7.4.3",
+    "urllib3>=1.26.0",
+    "wrapt>=1.12.0",
+]
+tests = [
+    "tox>=3.20.1",
+]
+graph = [
+    "networkx>=2.3.0",
+]
 
-    | tests/_ground_truth_figures
-  )/
+[dependency-groups]
+dev = [
+    "bump2version>=1.0.1",
+    "pre-commit>=2.7.1",
+]
 
-)
-'''
+[project.urls]
+Homepage = "https://omnipathdb.org/"
+Documentation = "https://omnipath.readthedocs.io/"
+Repository = "https://github.com/saezlab/omnipath"
+Issues = "https://github.com/saezlab/omnipath/issues"
 
 [tool.isort]
 from_first = true
