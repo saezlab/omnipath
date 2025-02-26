@@ -93,13 +93,10 @@ def _inject_api_method(
         import omnipath  # noqa: F401
 
         NoneType, pandas = type(None), pd
-
-        exec(
-            f"def adapter{sig}: pass".replace(" /,", ""),
-            globals(),
-            locals(),
-        )
-        return locals()["adapter"]
+        adapter_code = f"def adapter{sig}: pass".replace(" /,", "")
+        exec_locals = locals()
+        exec(adapter_code, globals(), exec_locals)
+        return exec_locals["adapter"]
 
     if not isinstance(clazz, type):
         raise TypeError(
