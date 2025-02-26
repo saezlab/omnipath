@@ -18,7 +18,7 @@ jobs:
             max-parallel: 4
             matrix:
                 os: [ubuntu-latest, macos-latest]
-                python: ['3.8', '3.10', '3.11']
+                python: ['3.9', '3.10', '3.11', '3.12', '3.13']
                 test_server: [false]
                 include:
                 -   os: macos-latest
@@ -31,36 +31,33 @@ jobs:
         -   uses: actions/checkout@v4
             with:
                 fetch-depth: 0
-        -   name: Set up Python ${{ matrix.python }}
-            uses: actions/setup-python@v5
-            with:
-                python-version: ${{ matrix.python }}
 
-        -   name: Get pip cache dir
-            id: pip-cache
-            run: |
-                echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
-        -   name: Cache pip
-            uses: actions/cache@v4
+        -   name: Install uv
+            uses: astral-sh/setup-uv@v5
             with:
-                path: ${{ steps.pip-cache.outputs.dir }}
-                key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+              enable-cache: true
+
+        -   name: Set up Python ${{ matrix.python }}
+            run: uv python install ${{ matrix.python-version }}
+
         -   name: Install dependencies
             run: |
-                python -m pip install --upgrade pip
-                pip install tox tox-gh-actions codecov
+                uv sync --all-extras
+                uv pip install tox-gh-actions codecov
 
         -   name: Install R
             if: matrix.test_server
             uses: r-lib/actions/setup-r@v2
             with:
                 r-version: 4.4.1
+
         -   name: Get R cache dir
             uses: actions/cache@v4
             if: matrix.test_server
             with:
                 path: ~/.local/share/renv
                 key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
+
         -   name: Install OmnipathR
             if: matrix.test_server
             run: |
@@ -72,28 +69,27 @@ jobs:
             env:
                 PLATFORM: ${{ matrix.platform }}
             run: |
-                tox -vv
+                uv run tox -vv
 
         -   name: Upload coverage to Codecov
             if: success()
             env:
                 CODECOV_NAME: ${{ matrix.python }}-${{ matrix.os }}
             run: |
-                codecov --no-color --required --flags unittests
+                uv run codecov --no-color --required --flags unittests
 
     deploy:
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
         needs: build
         runs-on: ubuntu-latest
         steps:
+
         -   uses: actions/checkout@v3
             with:
                 fetch-depth: 0
 
-        -   name: Install dependencies
-            run: pip install build
         -   name: Build a binary wheel and a source tarball
-            run: python -m build --sdist --wheel --outdir dist/
+            run: uv build
 
         -   name: Publish package on PyPI
             uses: pypa/gh-action-pypi-publish@release/v1
