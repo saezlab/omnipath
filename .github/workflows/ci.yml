@@ -43,7 +43,8 @@ jobs:
         -   name: Install dependencies
             run: |
                 uv sync --all-extras
-                uv pip install tox-gh-actions codecov
+                uv pip install codecov
+                uv tool install tox --with tox-uv
 
         -   name: Install R
             if: matrix.test_server
@@ -69,7 +70,7 @@ jobs:
             env:
                 PLATFORM: ${{ matrix.platform }}
             run: |
-                uv run tox -vv
+                tox -vv
 
         -   name: Upload coverage to Codecov
             if: success()
