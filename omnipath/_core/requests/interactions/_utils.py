@@ -1,4 +1,4 @@
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import pandas as pd
 
@@ -126,11 +126,12 @@ def import_intercell_network(
     res = pd.merge(interactions, transmitters, left_on="source", right_on="uniprot", how="inner")
     if res.empty:
         raise ValueError("No values are left after merging interactions and transmitters.")
-    gb = res.groupby(["category", "parent", "source", "target"], as_index=False)
+
     # fmt: on
 
-    res = gb.nth(0).copy()  # much faster than 1st
-    res["database"] = gb["database"].apply(";".join)["database"].astype(str)
+    groupby_cols = ["category", "parent", "source", "target"]
+    res = _join_str_col(res, "database", groupby_cols)
+    res = _summarize_first(res, groupby_cols)
 
     res = pd.merge(
         res,
@@ -142,24 +143,18 @@ def import_intercell_network(
     )
     if res.empty:
         raise ValueError("No values are left after merging interactions and receivers.")
-    gb = res.groupby(
-        [
-            "category_intercell_source",
-            "parent_intercell_source",
-            "source",
-            "target",
-            "category_intercell_target",
-            "parent_intercell_target",
-        ],
-        as_index=False,
-    )
 
-    res = gb.nth(0).copy()
-    res["database_intercell_target"] = (
-        gb["database_intercell_target"]
-        .apply(";".join)["database_intercell_target"]
-        .astype(str)
-    )
+    groupby_cols = [
+        "category_intercell_source",
+        "parent_intercell_source",
+        "source",
+        "target",
+        "category_intercell_target",
+        "parent_intercell_target",
+    ]
+
+    res = _join_str_col(res, "database_intercell_target", groupby_cols)
+    res = _summarize_first(res, groupby_cols)
 
     # retype back as categories
     for col in ["category", "parent"]:
@@ -167,3 +162,16 @@ def import_intercell_network(
             res[f"{col}{suffix}"] = res[f"{col}{suffix}"].astype("category")
 
     return res.reset_index(drop=True)
+
+
+# pandas is a disaster:
+def _join_str_col(df: pd.DataFrame, col: str, groupby_cols: List[str]) -> pd.DataFrame:
+    return df.assign(
+        **{col: df.groupby(groupby_cols)[col].transform(lambda x: ";".join(x))}
+    )
+
+
+def _summarize_first(df: pd.DataFrame, groupby_cols: List[str]) -> pd.DataFrame:
+    return (
+        df.groupby(groupby_cols, as_index=False).nth(0).copy()
+    )  # much faster than 1st
