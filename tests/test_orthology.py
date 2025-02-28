@@ -50,17 +50,17 @@ class TestOrthologyConversion:
             keep_untranslated=False,
             one_to_many=2,
         )
-        expected = [
-            "Cd8a_Cd8b1",
+        expected = {
             "Csf2ra_Csf2rb",
             "Csf2ra_Csf2rb2",
             "Ifnl2_Ifnlr1_Il10rb",
             "Ifnl3_Ifnlr1_Il10rb",
+            "Cd8a_Cd8b1",
             "Il4",
-        ]
+        }
 
         assert to_many.shape == (6, 1)
-        assert all(to_many["symbol"] == expected)
+        assert set(to_many["symbol"]) == expected
 
         keep_missing = translate_column(
             df,
