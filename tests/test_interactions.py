@@ -1,6 +1,7 @@
 from io import StringIO
 from urllib.parse import urljoin, quote_plus
 import json
+import pickle
 
 import pytest
 
@@ -256,19 +257,32 @@ class TestUtils:
             receiver_params={"categories": "receptor"},
         )
 
+        sortby = [
+            "source",
+            "target",
+            "category_intercell_source",
+            "category_intercell_target",
+            "database_intercell_source",
+            "database_intercell_target",
+        ]
+
+        for df in (res, import_intercell_result):
+            df.sort_values(sortby, inplace=True)
+            df.reset_index(drop=True, inplace=True)
+
+        assert len(requests_mock.request_history) == 3
         np.testing.assert_array_equal(res.shape, import_intercell_result.shape)
         np.testing.assert_array_equal(res.index, import_intercell_result.index)
         np.testing.assert_array_equal(res.columns, import_intercell_result.columns)
         # TODO(michalk8): broken in `pandas=2.0`
         # np.testing.assert_array_equal(res.dtypes, import_intercell_result.dtypes)
         np.testing.assert_array_equal(
-            pd.isnull(res), pd.isnull(import_intercell_result)
-        )
-        np.testing.assert_array_equal(
             res.values[~pd.isnull(res)],
             import_intercell_result.values[~pd.isnull(import_intercell_result)],
         )
-        assert len(requests_mock.request_history) == 3
+        np.testing.assert_array_equal(
+            pd.isnull(res), pd.isnull(import_intercell_result)
+        )
 
     @pytest.mark.parametrize("which", ["interactions", "receivers", "transmitters"])
     def test_intercell_empty(
