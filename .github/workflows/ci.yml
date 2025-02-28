@@ -69,6 +69,7 @@ jobs:
         -   name: Test
             env:
                 PLATFORM: ${{ matrix.platform }}
+                TOXENV: py${{ matrix.python-version | replace('.', '') }}
             run: |
                 tox -vv
 
