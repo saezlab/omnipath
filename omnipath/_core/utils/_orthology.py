@@ -128,9 +128,11 @@ def translate_column(
 
     elif keep_untranslated:
         data[column] = data.apply(
-            lambda x: x["orthology_target"]
-            if not pd.isnull(x["orthology_target"])
-            else x[column],
+            lambda x: (
+                x["orthology_target"]
+                if not pd.isnull(x["orthology_target"])
+                else x[column]
+            ),
             axis=1,
         )
 

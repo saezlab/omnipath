@@ -1,7 +1,6 @@
 from io import StringIO
 from urllib.parse import urljoin, quote_plus
 import json
-import pickle
 
 import pytest
 

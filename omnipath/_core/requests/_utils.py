@@ -141,9 +141,11 @@ def _split_unique_join(data: pd.Series, func: Optional[Callable] = None) -> pd.S
 
     if func is None:
         data = data.apply(
-            lambda row: ";".join(sorted(set(map(str, row))))
-            if isinstance(row, Iterable)
-            else row
+            lambda row: (
+                ";".join(sorted(set(map(str, row))))
+                if isinstance(row, Iterable)
+                else row
+            )
         )
     else:
         data = data.apply(func)
