@@ -37,14 +37,16 @@ jobs:
             with:
                 enable-cache: true
 
-        -   name: Set up Python ${{ matrix.python }}
-            run: uv python install ${{ matrix.python-version }}
+        -   name: Install Python
+            if: matrix.python != '3.13'
+            run: uv python install --python-preference only-managed ${{ matrix.python }}
 
         -   name: Install dependencies
             run: |
                 uv sync --all-extras
                 uv pip install codecov
-                uv tool install tox --with tox-uv
+                uv tool install --python-preference only-managed --python 3.13 tox --with tox-uv --with tox-gh
+
 
         -   name: Install R
             if: matrix.test_server
@@ -66,19 +68,24 @@ jobs:
                 sudo Rscript --vanilla -e "if (!(requireNamespace('BiocManager', quietly=TRUE))) { install.packages(c('BiocManager', 'curl'), repos='https://cloud.r-project.org/') }; BiocManager::install('OmnipathR')"
                 Rscript --vanilla -e "packageVersion('OmnipathR')"
 
-        -   name: Test
+        -   name: Set up test suite
             env:
-                PLATFORM: ${{ matrix.platform }}
-                TOXENV: py${{ matrix.python-version | replace('.', '') }}
+                TOX_GH_MAJOR_MINOR: ${{ matrix.python }}
             run: |
-                tox -vv
+                tox run -vv --notest --skip-missing-interpreters false
+
+        -   name: Run tests
+            env:
+                TOX_GH_MAJOR_MINOR: ${{ matrix.python }}
+            run: |
+                tox run -vv --skip-pkg-install
 
         -   name: Upload coverage to Codecov
             if: success()
             env:
                 CODECOV_NAME: ${{ matrix.python }}-${{ matrix.os }}
             run: |
-                uv run codecov --no-color --required --flags unittests
+                uv run codecovcli --verbose upload-process -t ${{ secrets.CODECOV_TOKEN  }} -n $CODECOV_NAME -F unittests
 
     deploy:
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
