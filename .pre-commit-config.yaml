@@ -49,7 +49,7 @@ repos:
     -   id: pyupgrade
         args: [--py3-plus, --py36-plus]
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.9.0
+    rev: v2.14.0
     hooks:
     -   id: pretty-format-yaml
         args: [--autofix, --indent, '4']
