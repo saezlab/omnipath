@@ -10,7 +10,7 @@ import omnipath.interactions as interactions
 
 __author__ = ", ".join(["Michal Klein", "Dénes Türei"])
 __maintainer__ = ", ".join(["Michal Klein", "Dénes Türei"])
-__version__ = "1.0.8"
+__version__ = "1.0.9"
 __email__ = "turei.denes@gmail.com"
 
 try:
