@@ -46,8 +46,7 @@ jobs:
                 uv sync --all-extras
                 uv pip install codecov
                 uv tool install \
-                  --python-preference only-managed \
-                  --python ${{ matrix.python }} \
+                  --python-preference only-managed ${{ matrix.python }} \
                   tox --with tox-uv --with tox-gh
 
 
