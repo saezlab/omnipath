@@ -22,7 +22,7 @@ jobs:
                 test_server: [false]
                 include:
                 -   os: macos-latest
-                    python: 3.9
+                    python: '3.13'
         env:
             OS: ${{ matrix.os }}
             PYTHON: ${{ matrix.python }}
