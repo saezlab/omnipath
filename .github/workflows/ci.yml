@@ -18,9 +18,10 @@ jobs:
             max-parallel: 4
             matrix:
                 os: [ubuntu-latest, macos-latest]
-                python: ['3.9', '3.10', '3.11', '3.12', '3.13']
                 test_server: [false]
                 include:
+                -   os: ubuntu-latest
+                    python: ['3.9', '3.10', '3.11', '3.12', '3.13']
                 -   os: macos-latest
                     python: '3.13'
         env:
