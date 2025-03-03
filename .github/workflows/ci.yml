@@ -47,7 +47,9 @@ jobs:
                 uv pip install codecov
                 uv tool install \
                   --python-preference only-managed ${{ matrix.python }} \
-                  tox --with tox-uv --with tox-gh
+                  --with tox-uv \
+                  --with tox-gh \
+                  tox
 
 
         -   name: Install R
