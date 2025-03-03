@@ -36,16 +36,19 @@ jobs:
             uses: astral-sh/setup-uv@v5
             with:
                 enable-cache: true
+                python-version: ${{ matrix.python }}
 
         -   name: Install Python
-            if: matrix.python != '3.13'
             run: uv python install --python-preference only-managed ${{ matrix.python }}
 
         -   name: Install dependencies
             run: |
                 uv sync --all-extras
                 uv pip install codecov
-                uv tool install --python-preference only-managed --python 3.13 tox --with tox-uv --with tox-gh
+                uv tool install \
+                  --python-preference only-managed \
+                  --python ${{ matrix.python }} \
+                  tox --with tox-uv --with tox-gh
 
 
         -   name: Install R
