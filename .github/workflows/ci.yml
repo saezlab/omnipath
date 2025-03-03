@@ -72,7 +72,7 @@ jobs:
             env:
                 TOX_GH_MAJOR_MINOR: ${{ matrix.python }}
             run: |
-                tox run -vv --notest --skip-missing-interpreters false
+                tox run -vv --notest --skip-missing-interpreters true
 
         -   name: Run tests
             env:
