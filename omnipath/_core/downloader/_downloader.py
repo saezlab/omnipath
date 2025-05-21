@@ -173,10 +173,12 @@ class Downloader:
             File-like object containing the data. Usually a json- or csv-like data is present inside.
         """
         logging.info(f"Downloading data from `{req.url}`")
-
+        settings = self._session.merge_environment_settings(
+            req.url, {}, None, None, None
+        )
         handle = BytesIO()
         with self._session.send(
-            req, stream=True, timeout=self._options.timeout
+            req, stream=True, timeout=self._options.timeout, **settings
         ) as resp:
             resp.raise_for_status()
             total = resp.headers.get("content-length", None)
