@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "omnipath"
-version = "1.0.9"
+version = "1.0.10"
 description = "Python client for the OmniPath web service"
 license = "MIT"
 authors = [
