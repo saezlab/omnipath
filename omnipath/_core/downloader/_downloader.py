@@ -176,12 +176,10 @@ class Downloader:
         settings = self._session.merge_environment_settings(
             req.url, {}, None, None, None
         )
-        settings['stream'] = True
-        settings['timeout'] = self._options.timeout
+        settings["stream"] = True
+        settings["timeout"] = self._options.timeout
         handle = BytesIO()
-        with self._session.send(
-            req, **settings
-        ) as resp:
+        with self._session.send(req, **settings) as resp:
             resp.raise_for_status()
             total = resp.headers.get("content-length", None)
 
