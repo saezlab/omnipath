@@ -7,7 +7,7 @@ packages = ["omnipath"]
 
 [project]
 name = "omnipath"
-version = "1.0.10"
+version = "1.0.11"
 description = "Python client for the OmniPath web service"
 license = "MIT"
 authors = [
