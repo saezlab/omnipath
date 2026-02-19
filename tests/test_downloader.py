@@ -150,8 +150,14 @@ class TestDownloader:
         np.testing.assert_array_equal(res.values, csv_df.values)
 
     def test_fallback_urls(self, requests_mock, csv_data: bytes):
-        query = "annotations?resources=PROGENy"
+
         opt = Options(url="https://wrong.omnipathdb.org/")
+
+        if not opt.fallback_urls:
+
+            return
+
+        query = "annotations?resources=PROGENy"
         requests_mock.register_uri(
             "GET",
             urljoin(opt.url, query),
